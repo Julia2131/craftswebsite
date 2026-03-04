@@ -147,7 +147,7 @@ export default function Home() {
           ) : (
             <button
               type="button"
-              onClick={openLogin}
+              onClick={() => navigate("/log")}
               className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             >
               Đăng nhập
@@ -183,7 +183,8 @@ export default function Home() {
 
       {/* DẤU ẤN ĐỘC BẢN */}
       <section className="mx-auto max-w-6xl px-4 py-10">
-        <h2 className="mb-6 font-serif text-2xl">Dấu Ấn Độc Bản</h2>
+
+        <h2 className="mb-6 text-2xl font-semibold">Dấu Ấn Độc Bản</h2>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {[banner1, banner2, banner3].map((src, i) => (
