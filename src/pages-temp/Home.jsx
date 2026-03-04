@@ -25,6 +25,20 @@ export default function Home() {
     return Array.from({ length: 10 }, (_, i) => base[i % base.length]);
   }, []);
 
+  // ===== AUTH MODAL =====
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("login"); // "login" | "register"
+
+  const openLogin = () => {
+    setAuthMode("login");
+    setAuthOpen(true);
+  };
+  const openRegister = () => {
+    setAuthMode("register");
+    setAuthOpen(true);
+  };
+  const closeAuth = () => setAuthOpen(false);
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* HEADER */}
@@ -40,7 +54,11 @@ export default function Home() {
             <img src={searchIcon} alt="search" className="ml-2 h-5 w-5" />
           </div>
 
-          <button className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+          <button
+            type="button"
+            onClick={openLogin}
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
             Đăng nhập
           </button>
         </div>
@@ -125,8 +143,8 @@ export default function Home() {
             <div>
               <h3 className="mb-3 font-serif text-lg text-[#c07a46]">Info</h3>
               <p className="text-sm leading-6">
-                Sàn thương mại điện tử chuyên biệt cho nghệ nhân và người yêu thích sản
-                phẩm mang tính chất cá nhân, mới mẻ.
+                Sàn thương mại điện tử chuyên biệt cho nghệ nhân và người yêu
+                thích sản phẩm mang tính chất cá nhân, mới mẻ.
               </p>
 
               <div className="mt-5 flex items-center gap-3">
@@ -138,7 +156,9 @@ export default function Home() {
 
             {/* Shopping */}
             <div>
-              <h3 className="mb-3 font-serif text-lg text-[#c07a46]">Shopping</h3>
+              <h3 className="mb-3 font-serif text-lg text-[#c07a46]">
+                Shopping
+              </h3>
               <ul className="space-y-2 text-sm leading-6">
                 <li>Đồ Decor &amp; Nội thất</li>
                 <li>Trang sức thủ công</li>
@@ -161,8 +181,12 @@ export default function Home() {
 
             {/* Newsletter */}
             <div>
-              <h3 className="mb-3 font-serif text-lg text-[#c07a46]">Newsletter</h3>
-              <p className="text-sm leading-6">Nhận tin ưu đãi từ các nghệ nhân.</p>
+              <h3 className="mb-3 font-serif text-lg text-[#c07a46]">
+                Newsletter
+              </h3>
+              <p className="text-sm leading-6">
+                Nhận tin ưu đãi từ các nghệ nhân.
+              </p>
 
               <button
                 type="button"
@@ -175,6 +199,16 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* AUTH MODAL */}
+      {authOpen && (
+        <AuthModal
+          mode={authMode}
+          onClose={closeAuth}
+          onGoLogin={() => setAuthMode("login")}
+          onGoRegister={() => setAuthMode("register")}
+        />
+      )}
     </div>
   );
 }
@@ -183,22 +217,18 @@ export default function Home() {
  * Fixed3CardCarousel:
  * - Layout cố định đúng mẫu: trái nhỏ (vuông) - giữa to (vuông) - phải nhỏ (vuông)
  * - Không loop, không dải dài => không bao giờ lệch bố cục
- * - Nút trái/phải đổi active; click card cũng đổi active
- * - Animation nhẹ nhàng (mượt, không giật trang)
  */
 function Fixed3CardCarousel({ slides }) {
   const [active, setActive] = useState(1); // bắt đầu ở item 2 cho giống mẫu
 
   const total = slides.length;
-
   const prevIndex = (active - 1 + total) % total;
   const nextIndex = (active + 1) % total;
 
-  // Kích thước vuông đúng style mẫu
   const SIDE = 220;
   const CENTER = 320;
 
-  const Card = ({ src, size, isCenter, onClick }) => (
+  const Card = ({ src, size, onClick }) => (
     <button
       type="button"
       onClick={onClick}
@@ -210,8 +240,7 @@ function Fixed3CardCarousel({ slides }) {
         className="h-full w-full overflow-hidden rounded-sm bg-white/10 transition-transform duration-500 ease-in-out"
         style={{
           boxShadow: "0 0 0 4px rgba(255,255,255,0.55) inset",
-          transform: isCenter ? "scale(1)" : "scale(1)",
-          opacity: isCenter ? 1 : 0.95,
+          opacity: 0.95,
         }}
       >
         <img
@@ -229,7 +258,6 @@ function Fixed3CardCarousel({ slides }) {
 
   return (
     <div className="flex items-center justify-between gap-6">
-      {/* arrow left */}
       <button
         onClick={goPrev}
         className="text-3xl opacity-90 hover:opacity-100 transition-opacity duration-300"
@@ -239,33 +267,35 @@ function Fixed3CardCarousel({ slides }) {
         ‹
       </button>
 
-      {/* 3 cards layout */}
       <div className="flex flex-1 items-end justify-center gap-20">
-        <Card
-          src={slides[prevIndex]}
-          size={SIDE}
-          isCenter={false}
-          onClick={goPrev}
-        />
+        <Card src={slides[prevIndex]} size={SIDE} onClick={goPrev} />
 
-        <div className="transition-transform duration-500 ease-in-out">
-          <Card
-            src={slides[active]}
-            size={CENTER}
-            isCenter={true}
-            onClick={() => {}}
-          />
-        </div>
+        <button
+          type="button"
+          onClick={() => {}}
+          className="focus:outline-none"
+          style={{ width: CENTER, height: CENTER }}
+          title="Active"
+        >
+          <div
+            className="h-full w-full overflow-hidden rounded-sm bg-white/10 transition-transform duration-500 ease-in-out"
+            style={{
+              boxShadow: "0 0 0 4px rgba(255,255,255,0.55) inset",
+              opacity: 1,
+            }}
+          >
+            <img
+              src={slides[active]}
+              alt="active-slide"
+              className="h-full w-full object-cover select-none"
+              draggable={false}
+            />
+          </div>
+        </button>
 
-        <Card
-          src={slides[nextIndex]}
-          size={SIDE}
-          isCenter={false}
-          onClick={goNext}
-        />
+        <Card src={slides[nextIndex]} size={SIDE} onClick={goNext} />
       </div>
 
-      {/* arrow right */}
       <button
         onClick={goNext}
         className="text-3xl opacity-90 hover:opacity-100 transition-opacity duration-300"
@@ -278,11 +308,186 @@ function Fixed3CardCarousel({ slides }) {
   );
 }
 
-// ...existing helpers...
 function SocialIcon({ label }) {
   return (
-    <div className="h-8 w-8 rounded-sm bg-white/10 flex items-center justify-center text-sm">
+    <div
+      className="h-8 w-8 rounded-sm bg-white/10 flex items-center justify-center text-sm"
+      title={label}
+      aria-label={label}
+    >
       {label[0]}
     </div>
+  );
+}
+
+/**
+ * AuthModal
+ */
+function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
+  const isLogin = mode === "login";
+  const [showPass, setShowPass] = useState(false);
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center">
+      {/* overlay */}
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/30"
+        onClick={onClose}
+        aria-label="Close overlay"
+      />
+
+      {/* card */}
+      <div className="relative z-10 w-[720px] max-w-[92vw] bg-white px-12 py-10 shadow-xl">
+        {/* close */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute -right-8 top-6 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white text-2xl hover:bg-blue-700"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        <div className="flex items-start justify-between">
+          <h1 className="font-serif text-4xl">
+            {isLogin ? "Đăng nhập" : "Đăng ký"}
+          </h1>
+
+          {isLogin ? (
+            <WipeButton onClick={onGoRegister} className="px-8 py-2">
+              Đăng ký
+            </WipeButton>
+          ) : (
+            <WipeButton onClick={onGoLogin} className="px-8 py-2">
+              Đăng nhập
+            </WipeButton>
+          )}
+        </div>
+
+        <div className="mt-10 space-y-8">
+          {isLogin ? (
+            <>
+              <div>
+                <label className="mb-3 block font-serif text-lg">Họ và tên</label>
+                <input
+                  className="w-full rounded-md border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                  placeholder="VD: Nguyễn Văn A"
+                />
+              </div>
+
+              <div>
+                <label className="mb-3 block font-serif text-lg">Mật khẩu</label>
+                <div className="relative">
+                  <input
+                    className="w-full rounded-md border border-slate-300 px-4 py-3 pr-12 outline-none focus:border-blue-500"
+                    type={showPass ? "text" : "password"}
+                    placeholder="********"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900"
+                    aria-label="Toggle password"
+                    title="Hiện/ẩn mật khẩu"
+                  >
+                    👁
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  className="font-serif text-lg hover:underline"
+                  type="button"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
+
+              {/* ====== FIX Ở ĐÂY: nút dưới giống nút trên (outline) ====== */}
+              <div className="flex flex-col items-center gap-4 pt-2">
+                <WipeButton className="px-12 py-3 w-[220px]">
+                  Đăng nhập
+                </WipeButton>
+
+                <div className="text-sm text-slate-500">Hoặc</div>
+
+                <WipeButton className="px-12 py-3 w-[220px]">
+                  Đăng nhập bằng eKYC
+                </WipeButton>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="mb-3 block font-serif text-lg">Số điện thoại</label>
+                <input
+                  className="w-full rounded-md border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+                  placeholder="0*********"
+                />
+              </div>
+
+              <p className="text-sm text-slate-600">
+                Bằng việc nhấn vào nút Đăng ký là bạn đồng ý với{" "}
+                <span className="underline cursor-pointer">Điều khoản</span> sử
+                dụng và{" "}
+                <span className="underline cursor-pointer">chính sách</span>{" "}
+                bảo mật của chúng tôi
+              </p>
+
+              {/* ====== FIX Ở ĐÂY: nút dưới giống nút trên (outline) ====== */}
+              <div className="flex justify-end pt-2">
+                <WipeButton className="px-12 py-3 w-[220px]">
+                  Đăng ký
+                </WipeButton>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * WipeButton (fix để không bao giờ “che mất”):
+ * - lớp phủ có pointer-events-none
+ * - outline mặc định: trắng -> hover xanh gạt vào
+ */
+function WipeButton({
+  children,
+  className = "",
+  type = "button",
+  onClick,
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      className={[
+        "group relative inline-flex items-center justify-center",
+        "overflow-hidden rounded-md border border-blue-600",
+        "bg-white text-blue-600",
+        "text-sm font-medium",
+        "transition-colors duration-300 ease-out",
+        "focus:outline-none focus:ring-2 focus:ring-blue-500/50",
+        className,
+      ].join(" ")}
+    >
+      {/* lớp màu xanh trượt vào - KHÔNG được chặn click */}
+      <span
+        className={[
+          "pointer-events-none absolute inset-0",
+          "translate-x-[-110%] group-hover:translate-x-0",
+          "bg-blue-600",
+          "transition-transform duration-500 ease-out",
+        ].join(" ")}
+      />
+      {/* chữ nằm trên */}
+      <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
+        {children}
+      </span>
+    </button>
   );
 }
