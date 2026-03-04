@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import logo from "../assets/Hero.png";
 import searchIcon from "../assets/Icon.png";
@@ -19,7 +20,8 @@ import seller3 from "../assets/Seller 3.jpg";
 import footerBg from "../assets/Footer-background.jpg";
 
 export default function Home() {
-  // 10 sản phẩm tượng trưng (lặp từ 4 ảnh)
+  const navigate = useNavigate();
+
   const slides = useMemo(() => {
     const base = [product1, product2, product3, product4];
     return Array.from({ length: 10 }, (_, i) => base[i % base.length]);
@@ -39,6 +41,49 @@ export default function Home() {
   };
   const closeAuth = () => setAuthOpen(false);
 
+  const goRegisterCCCD = () => {
+    closeAuth();
+    navigate("/register-cccd");
+  };
+
+  // ===== USER STATE (fake login from localStorage) =====
+  const [user, setUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("craft_user")) || null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        setUser(JSON.parse(localStorage.getItem("craft_user")) || null);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    // sync ngay khi vào Home
+    syncUser();
+
+    // thay đổi từ tab khác
+    window.addEventListener("storage", syncUser);
+
+    // ✅ thay đổi ngay sau khi confirm CCCD (cùng tab)
+    window.addEventListener("craft_user_updated", syncUser);
+
+    return () => {
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("craft_user_updated", syncUser);
+    };
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem("craft_user");
+    setUser(null);
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* HEADER */}
@@ -54,13 +99,60 @@ export default function Home() {
             <img src={searchIcon} alt="search" className="ml-2 h-5 w-5" />
           </div>
 
-          <button
-            type="button"
-            onClick={openLogin}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            Đăng nhập
-          </button>
+          {/* ✅ Nếu đã xác thực -> hiện avatar, nếu chưa -> hiện nút đăng nhập */}
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt="avatar"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-full w-full flex items-center justify-center text-sm text-slate-500">
+                      U
+                    </div>
+                  )}
+                </div>
+
+                <div className="leading-tight">
+                  <div className="text-sm font-medium text-slate-800">
+                    {user.name || "Người dùng"}
+                  </div>
+                  <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                    <span
+                      className={[
+                        "inline-flex items-center rounded-full px-2 py-[2px]",
+                        user.verified
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200",
+                      ].join(" ")}
+                    >
+                      {user.verified ? "Đã xác thực eKYC" : "Chưa xác thực"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-md border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={openLogin}
+              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Đăng nhập
+            </button>
+          )}
         </div>
       </header>
 
@@ -81,7 +173,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CAROUSEL nền xám - BỐ CỤC CHUẨN MẪU (không loop) */}
+      {/* CAROUSEL */}
       <section className="mx-auto max-w-6xl px-4 pb-10">
         <div className="rounded-md bg-slate-600/80 p-6 text-white">
           <div className="mb-4 text-sm opacity-80">Month Day, Year [Today]</div>
@@ -207,20 +299,16 @@ export default function Home() {
           onClose={closeAuth}
           onGoLogin={() => setAuthMode("login")}
           onGoRegister={() => setAuthMode("register")}
+          onStartEKYCRegister={goRegisterCCCD}
         />
       )}
     </div>
   );
 }
 
-/**
- * Fixed3CardCarousel:
- * - Layout cố định đúng mẫu: trái nhỏ (vuông) - giữa to (vuông) - phải nhỏ (vuông)
- * - Không loop, không dải dài => không bao giờ lệch bố cục
- */
+/** Carousel giữ nguyên */
 function Fixed3CardCarousel({ slides }) {
-  const [active, setActive] = useState(1); // bắt đầu ở item 2 cho giống mẫu
-
+  const [active, setActive] = useState(1);
   const total = slides.length;
   const prevIndex = (active - 1 + total) % total;
   const nextIndex = (active + 1) % total;
@@ -320,16 +408,19 @@ function SocialIcon({ label }) {
   );
 }
 
-/**
- * AuthModal
- */
-function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
+/** AuthModal: thêm action đi sang trang CCCD */
+function AuthModal({
+  mode,
+  onClose,
+  onGoLogin,
+  onGoRegister,
+  onStartEKYCRegister,
+}) {
   const isLogin = mode === "login";
   const [showPass, setShowPass] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center">
-      {/* overlay */}
       <button
         type="button"
         className="absolute inset-0 bg-black/30"
@@ -337,9 +428,7 @@ function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
         aria-label="Close overlay"
       />
 
-      {/* card */}
       <div className="relative z-10 w-[720px] max-w-[92vw] bg-white px-12 py-10 shadow-xl">
-        {/* close */}
         <button
           type="button"
           onClick={onClose}
@@ -405,15 +494,14 @@ function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
                 </button>
               </div>
 
-              {/* ====== FIX Ở ĐÂY: nút dưới giống nút trên (outline) ====== */}
               <div className="flex flex-col items-center gap-4 pt-2">
-                <WipeButton className="px-12 py-3 w-[220px]">
+                <WipeButton className="w-[220px] px-12 py-3">
                   Đăng nhập
                 </WipeButton>
 
                 <div className="text-sm text-slate-500">Hoặc</div>
 
-                <WipeButton className="px-12 py-3 w-[220px]">
+                <WipeButton className="w-[220px] px-12 py-3">
                   Đăng nhập bằng eKYC
                 </WipeButton>
               </div>
@@ -421,7 +509,9 @@ function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
           ) : (
             <>
               <div>
-                <label className="mb-3 block font-serif text-lg">Số điện thoại</label>
+                <label className="mb-3 block font-serif text-lg">
+                  Số điện thoại
+                </label>
                 <input
                   className="w-full rounded-md border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                   placeholder="0*********"
@@ -436,9 +526,11 @@ function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
                 bảo mật của chúng tôi
               </p>
 
-              {/* ====== FIX Ở ĐÂY: nút dưới giống nút trên (outline) ====== */}
               <div className="flex justify-end pt-2">
-                <WipeButton className="px-12 py-3 w-[220px]">
+                <WipeButton
+                  className="w-[220px] px-12 py-3"
+                  onClick={onStartEKYCRegister}
+                >
                   Đăng ký
                 </WipeButton>
               </div>
@@ -450,17 +542,7 @@ function AuthModal({ mode, onClose, onGoLogin, onGoRegister }) {
   );
 }
 
-/**
- * WipeButton (fix để không bao giờ “che mất”):
- * - lớp phủ có pointer-events-none
- * - outline mặc định: trắng -> hover xanh gạt vào
- */
-function WipeButton({
-  children,
-  className = "",
-  type = "button",
-  onClick,
-}) {
+function WipeButton({ children, className = "", type = "button", onClick }) {
   return (
     <button
       type={type}
@@ -475,16 +557,14 @@ function WipeButton({
         className,
       ].join(" ")}
     >
-      {/* lớp màu xanh trượt vào - KHÔNG được chặn click */}
       <span
         className={[
-          "pointer-events-none absolute inset-0",
+          "pointer-events-none absolute inset-0 z-0",
           "translate-x-[-110%] group-hover:translate-x-0",
           "bg-blue-600",
           "transition-transform duration-500 ease-out",
         ].join(" ")}
       />
-      {/* chữ nằm trên */}
       <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
         {children}
       </span>
