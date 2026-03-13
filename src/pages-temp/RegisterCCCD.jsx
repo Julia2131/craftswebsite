@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { uploadToCloudinary } from "../services/uploadToCloudinary";
 
 export default function RegisterCCCD() {
   const navigate = useNavigate();
@@ -10,35 +11,67 @@ export default function RegisterCCCD() {
   const [avatarDataUrl, setAvatarDataUrl] = useState(""); // ✅ base64 để lưu localStorage
   const [isConverting, setIsConverting] = useState(false);
   const [isConverted, setIsConverted] = useState(false);
+  const [cccdInfo, setCccdInfo] = useState(null);
+  const [imageUrl, setImageUrl] = useState("");
 
   const triggerPick = () => inputRef.current?.click();
 
-  const onPick = (e) => {
+  const onPick = async (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    
+    setAvatarDataUrl("");
 
-    // reset flow mỗi lần chọn ảnh mới
     setFile(f);
     setIsConverted(false);
-    setAvatarDataUrl("");
+    setCccdInfo(null);
+    setIsConverting(true);
 
     // preview bằng objectURL (nhẹ)
     const url = URL.createObjectURL(f);
     setPreviewUrl(url);
 
-    // ✅ tạo base64 để lưu user/avatar
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAvatarDataUrl(reader.result); // base64 string
-    };
-    reader.readAsDataURL(f);
+    try {
 
-    // bắt đầu “convert”
-    setIsConverting(true);
-    setTimeout(() => {
-      setIsConverting(false);
-      setIsConverted(true);
-    }, 2200);
+    // upload ảnh
+    const imageUrl = await uploadToCloudinary(f, "cccd");
+    setImageUrl(imageUrl);
+
+    const userId = localStorage.getItem("register_user_id");
+    
+    const API = import.meta.env.VITE_API_URL;
+    
+    const res = await fetch(`${API}/nguoi-dung/scan-cccd`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId: userId,
+        imageUrl: imageUrl
+      })
+    });
+
+    const data = await res.json();
+
+    setCccdInfo(data);
+
+    setIsConverted(true);
+
+  } catch (err) {
+
+    console.error(err);
+    alert("Không thể đọc CCCD");
+    setFile(null);
+    setPreviewUrl("");
+    setCccdInfo(null);
+
+  } finally {
+
+    setIsConverting(false);
+
+  }
+
   };
 
   // dọn preview URL tránh leak (OK vì avatar dùng base64)
@@ -48,27 +81,38 @@ export default function RegisterCCCD() {
     };
   }, [previewUrl]);
 
-  const canConfirm = !!file && isConverted && !isConverting;
+  const canConfirm = !!cccdInfo && !isConverting;
 
-  const onConfirm = () => {
+  const onConfirm = async () => {
     if (!canConfirm) return;
 
-    const fakeUser = {
-      name: "Người dùng",
-      avatar: avatarDataUrl || "", // ✅ base64
-      verified: true,
-      verifiedAt: new Date().toISOString(),
-    };
+    try{ 
 
-    localStorage.setItem("craft_user", JSON.stringify(fakeUser));
+      if (!cccdInfo) return;
 
-    // ✅ bắn event để Home update ngay (khỏi refresh)
-    window.dispatchEvent(new Event("craft_user_updated"));
+        const user = {
+          name: cccdInfo.hoTen,
+          avatar: imageUrl,
+          verified: true,
+          verifiedAt: new Date().toISOString()
+        };
 
-    // ✅ về Home
-    navigate("/");
+      localStorage.setItem("craft_user", JSON.stringify(user));
+
+      // bắn event để Home update ngay (khỏi refresh)
+      window.dispatchEvent(new Event("craft_user_updated"));
+
+      console.log("Ảnh CCCD đã upload:", imageUrl);
+      
+      // về Home
+      navigate("/reset-account");
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Upload ảnh thất bại " + err.message);
+    }
   };
 
+  
   return (
     <div className="min-h-screen bg-[#f3f5f7] flex items-center justify-center p-6">
       <div className="relative w-full max-w-6xl bg-white border-4 border-blue-500 p-10">
@@ -142,18 +186,49 @@ export default function RegisterCCCD() {
               </div>
             )}
 
-            {file && isConverted && !isConverting && (
+            
+            {file && !isConverting && (
               <div className="rounded-md border border-slate-200 bg-slate-50 p-4">
-                <div className="text-sm text-slate-700 font-medium">
-                  Chưa tích hợp OCR (Back-end)
-                </div>
-                <div className="mt-2 text-sm text-slate-600 leading-6">
-                  Khi tích hợp OCR, hệ thống sẽ tự động đọc các trường như: Số
-                  CCCD, Họ tên, Ngày sinh, Giới tính, Địa chỉ, Ngày cấp...
-                </div>
-                <div className="mt-3 text-xs text-slate-500">
-                  Demo FE hiện tại: mô phỏng upload → chuyển đổi → xác nhận.
-                </div>
+
+                {!cccdInfo ? (
+                  <>
+                    <div className="text-sm text-slate-700 font-medium">
+                      Đang chờ đọc thông tin CCCD
+                    </div>
+
+                    <div className="mt-2 text-sm text-slate-600 leading-6">
+                      Hệ thống sẽ tự động nhận diện và trích xuất các thông tin từ CCCD như:
+                      Số CCCD, Họ tên, Ngày sinh, Giới tính, Địa chỉ thường trú và Ngày cấp.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold text-slate-800 mb-2">
+                      Thông tin nhận diện từ CCCD
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-y-2 text-sm text-slate-700">
+                      <div>Số CCCD:</div>
+                      <div>{cccdInfo.cccd.soCCCD}</div>
+
+                      <div>Họ tên:</div>
+                      <div>{cccdInfo.cccd.hoTen}</div>
+
+                      <div>Ngày sinh:</div>
+                      <div>{cccdInfo.cccd.ngaySinh}</div>
+
+                      <div>Giới tính:</div>
+                      <div>{cccdInfo.cccd.gioiTinh}</div>
+
+                      <div>Địa chỉ:</div>
+                      <div>{cccdInfo.cccd.noiThuongTru}</div>
+
+                      <div>Ngày cấp:</div>
+                      <div>{cccdInfo.cccd.ngayCap}</div>
+                    </div>
+                  </>
+                )}
+
               </div>
             )}
           </div>

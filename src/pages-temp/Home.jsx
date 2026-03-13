@@ -2,7 +2,9 @@ import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import logo from "../assets/Hero.png";
-import searchIcon from "../assets/Icon.png";
+import searchIcon from "../assets/SearchIcon.png";
+import chatIcon from "../assets/ChatIcon.png";
+import shoppingIcon from "../assets/ShoppingIcon.png";
 
 import product1 from "../assets/Product 1.png";
 import product2 from "../assets/Product 2.png";
@@ -18,6 +20,8 @@ import seller2 from "../assets/Seller 2.jpg";
 import seller3 from "../assets/Seller 3.jpg";
 
 import footerBg from "../assets/Footer-background.jpg";
+
+import { Link } from "react-router-dom";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -83,11 +87,85 @@ export default function Home() {
     localStorage.removeItem("craft_user");
     setUser(null);
   };
+  
+  const API = import.meta.env.VITE_API_URL;
+
+  // click "Kênh người bán"
+  const handleOpenSeller = async () => {
+
+    try {
+
+      const buyerId = user?.id; // localStorage.setItem("register_user_id")
+      const res = await fetch(`${API}/thong-tin-nguoi-ban/check/${buyerId}`);
+
+      const data = await res.json();
+
+      if (data.exists) {
+        navigate("/switch-to-seller");
+      } else {
+        navigate("/seller/home");
+      }
+
+    } catch (err) {
+      console.error(err.value);
+    }
+
+  };
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* HEADER */}
       <header className="mx-auto max-w-6xl px-4 py-4">
+        {/* TOP BAR chỉ hiện khi đã đăng nhập */}
+        {user && (
+          <div className="flex items-center justify-between text-xs mb-2">
+            <div className="flex gap-4">
+              <Link
+                to="/switch-to-seller"
+                className="hover:underline text-sm font-medium text-slate-800"
+                onclick={handleOpenSeller}
+              >
+                Kênh người bán
+              </Link>
+              <a href="#" className="hover:underline text-sm font-medium text-slate-800">
+                Hỗ trợ
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt="avatar"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-sm text-slate-500">
+                    U
+                  </div>
+                )}
+              </div>
+
+              <div className="leading-tight">
+                <div className="text-sm font-medium text-slate-800">
+                  {user.name || "Người dùng"}
+                </div>
+                <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                  <span
+                    className={[
+                      "inline-flex items-center rounded-full px-2 py-[2px]",
+                      user.verified
+                        ? "bg-green-50 text-green-700 border border-green-200"
+                        : "bg-amber-50 text-amber-700 border border-amber-200",
+                    ].join(" ")}
+                  >
+                    {user.verified ? "Đã xác thực eKYC" : "Chưa xác thực"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="flex items-center gap-4">
           <img src={logo} alt="logo" className="h-10 object-contain" />
 
@@ -102,40 +180,16 @@ export default function Home() {
           {/* ✅ Nếu đã xác thực -> hiện avatar, nếu chưa -> hiện nút đăng nhập */}
           {user ? (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt="avatar"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-sm text-slate-500">
-                      U
-                    </div>
-                  )}
-                </div>
-
-                <div className="leading-tight">
-                  <div className="text-sm font-medium text-slate-800">
-                    {user.name || "Người dùng"}
-                  </div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                    <span
-                      className={[
-                        "inline-flex items-center rounded-full px-2 py-[2px]",
-                        user.verified
-                          ? "bg-green-50 text-green-700 border border-green-200"
-                          : "bg-amber-50 text-amber-700 border border-amber-200",
-                      ].join(" ")}
-                    >
-                      {user.verified ? "Đã xác thực eKYC" : "Chưa xác thực"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
+              <img
+                className="ml-2 h-5 w-5"
+                alt="Chat"
+                src={chatIcon}
+              />
+              <img
+                className="ml-2 h-5 w-5"
+                alt="Shopping"
+                src={shoppingIcon}
+              />
               <button
                 type="button"
                 onClick={logout}

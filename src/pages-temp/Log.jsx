@@ -5,29 +5,52 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 export default function Log() {
   const navigate = useNavigate();
 
-  const [phone, setPhone] = useState("");
+  const [username, setUsername] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
 
-  const canSubmit = phone.trim().length > 0 && pass.trim().length > 0;
+  const canSubmit = username.trim().length > 0 && pass.trim().length > 0;
 
-  const handleLogin = () => {
+  const API = import.meta.env.VITE_API_URL;
+  
+  const handleLogin = async () => {
     if (!canSubmit) return;
 
-    const fakeUser = {
-      name: "Người dùng",
-      avatar: "",
-      verified: false,
-      loginAt: new Date().toISOString(),
-    };
+    try {
+      const res = await fetch(`${API}/nguoi-dung/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          password: pass,
+        }),
+      });
 
-    localStorage.setItem("craft_user", JSON.stringify(fakeUser));
-    window.dispatchEvent(new Event("craft_user_updated"));
-    navigate("/");
+      const success = await res.json();
+
+      if (success) {
+        const user = {
+          name: username,
+          loginAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem("craft_user", JSON.stringify(user));
+        window.dispatchEvent(new Event("craft_user_updated"));
+
+        navigate("/");
+      } else {
+        alert("Sai tên đăng nhập hoặc mật khẩu");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Không kết nối được server");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#f3f5f7] p-6">
+    <div className="min-h-screen flex justify-center bg-[#f3f5f7] p-6">
       <div className="relative w-full max-w-xl bg-white border border-slate-200 shadow-sm rounded-md p-10">
         {/* close */}
         <button
@@ -42,12 +65,12 @@ export default function Log() {
         <h1 className="text-center font-serif text-4xl">Đăng nhập</h1>
 
         <div className="mt-10 space-y-6">
-          {/* phone */}
+          {/* Tên đăng nhập */}
           <div>
             <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Số điện thoại"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Tên đăng nhập"
               className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
               inputMode="numeric"
             />
@@ -64,7 +87,6 @@ export default function Log() {
                 className="w-full rounded-md border border-slate-300 px-4 py-4 pr-12 outline-none focus:border-blue-500"
               />
 
-              {/* ✅ icon line + toggle */}
               <button
                 type="button"
                 onClick={() => setShowPass((v) => !v)}
@@ -107,7 +129,7 @@ export default function Log() {
 
           {/* ekyc */}
           <button
-            onClick={() => navigate("/register-cccd")}
+            onClick={() => navigate("/cam")}
             className="w-full rounded-md border border-blue-600 py-4 font-semibold text-blue-600 hover:bg-blue-50"
           >
             Đăng nhập bằng eKYC
@@ -118,7 +140,7 @@ export default function Log() {
             Chưa có tài khoản?{" "}
             <button
               type="button"
-              onClick={() => navigate("/register-cccd")}
+              onClick={() => navigate("/sdt")}
               className="font-semibold text-blue-600 hover:underline"
             >
               Đăng ký
