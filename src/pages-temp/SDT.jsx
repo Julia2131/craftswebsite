@@ -10,7 +10,6 @@ export default function SDT() {
   const canSubmit = /^0\d{9}$/.test(phone);
 
   const API = import.meta.env.VITE_API_URL;
-  
     
   const XIcon = () => (
     <svg
@@ -68,196 +67,80 @@ export default function SDT() {
     }
   };
   
-return (
+  return (
+    <div className="min-h-screen bg-[#f3f5f7] flex items-center justify-center p-6">
+      <div className="w-full max-w-md bg-white p-10 rounded-lg shadow">
 
-  <div className="flex flex-col items-center gap-6">
+        {/* header */}
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-semibold">Đăng ký</h1>
 
-    <h2 className="text-2xl font-bold">
-      Thiết lập thông tin người bán
-    </h2>
+          <button
+            onClick={() => navigate("/login")}
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Đăng nhập
+          </button>
+        </div>
 
-    {/* tiền nhân công */}
-    <div className="flex flex-col w-[480px] items-start gap-[5px]">
+        {/* input phone */}
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium">
+            Số điện thoại
+          </label>
 
-      <label className="flex items-center gap-2.5 p-2.5 cursor-pointer">
-        <span className="text-xl text-color-text-main">
-          Tiền nhân công
-        </span>
-      </label>
+          <input
+            type="text"
+            value={phone}
+            onChange={handlePhoneChange}
+            placeholder="Nhập số điện thoại"
+            className={`w-full border rounded-md px-4 py-3 outline-none 
+              ${error ? "border-red-500" : "border-slate-300"}
+              focus:border-blue-500`}
+          />
 
-      <div className="relative w-full">
-        <input
-          name="tienNhanCong"
-          value={form.tienNhanCong}
-          onChange={handleChange}
-          placeholder="VD: 100.000 VND / giờ"
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-      </div>
+          {error && (
+            <p className="text-red-500 text-sm">
+              {error}
+            </p>
+          )}
+        </div>
 
-      {errors.tienNhanCong && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.tienNhanCong}
+        {/* điều khoản */}
+        <p className="text-xs text-slate-600 mt-6 leading-relaxed">
+          Bằng việc nhấn vào nút <span className="font-medium">Đăng ký</span> là bạn đồng ý với{" "}
+          <a
+            href="/dieu-khoan"
+            className="underline text-blue-600 hover:text-blue-700"
+          >
+            Điều khoản sử dụng
+          </a>{" "}
+          và{" "}
+          <a
+            href="/chinh-sach-bao-mat"
+            className="underline text-blue-600 hover:text-blue-700"
+          >
+            chính sách bảo mật
+          </a>{" "}
+          của chúng tôi.
         </p>
-      )}
 
-    </div>
+        {/* button */}
+        <button
+          onClick={handleRegister}
+          disabled={!canSubmit}
+          className={`w-full mt-6 py-3 rounded-md font-semibold
+            ${
+              canSubmit
+                ? "bg-blue-600 text-white hover:bg-blue-700"
+                : "bg-blue-300 text-white cursor-not-allowed"
+            }`}
+        >
+          Đăng ký
+        </button>
 
-
-    {/* tiền thương hiệu */}
-    <div className="flex flex-col w-[480px] items-start gap-[5px]">
-
-      <label className="flex items-center gap-2.5 p-2.5 cursor-pointer">
-        <span className="text-xl text-color-text-main">
-          Tiền thương hiệu
-        </span>
-      </label>
-
-      <div className="relative w-full">
-        <input
-          name="tienThuongHieu"
-          value={form.tienThuongHieu}
-          onChange={handleChange}
-          placeholder="VD: 50.000 VND / sản phẩm"
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
       </div>
-
-      {errors.tienThuongHieu && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.tienThuongHieu}
-        </p>
-      )}
-
     </div>
-
-
-    {/* mã số thuế */}
-    <div className="flex flex-col w-[480px] items-start gap-[5px]">
-
-      <label className="flex items-center gap-2.5 p-2.5 cursor-pointer">
-        <span className="text-xl text-color-text-main">
-          Mã số thuế
-        </span>
-      </label>
-
-      <div className="relative w-full">
-        <input
-          name="maSoThue"
-          value={form.maSoThue}
-          onChange={handleChange}
-          placeholder="VD: 0312345678"
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-      </div>
-
-      {errors.maSoThue && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.maSoThue}
-        </p>
-      )}
-
-    </div>
-
-
-    <h3 className="text-lg font-semibold">
-      Tài khoản ngân hàng
-    </h3>
-
-
-    {/* mã ngân hàng */}
-    <div className="flex flex-col w-[480px] items-start gap-[5px]">
-
-      <label className="flex items-center gap-2.5 p-2.5 cursor-pointer">
-        <span className="text-xl text-color-text-main">
-          Mã ngân hàng
-        </span>
-      </label>
-
-      <div className="relative w-full">
-        <input
-          name="maNganHang"
-          value={form.maNganHang}
-          onChange={handleChange}
-          placeholder="VD: VCB, TCB, ACB..."
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-      </div>
-
-      {errors.maNganHang && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.maNganHang}
-        </p>
-      )}
-
-    </div>
-
-
-    {/* số tài khoản */}
-    <div className="flex flex-col w-[480px] items-start gap-[5px]">
-
-      <label className="flex items-center gap-2.5 p-2.5 cursor-pointer">
-        <span className="text-xl text-color-text-main">
-          Số tài khoản
-        </span>
-      </label>
-
-      <div className="relative w-full">
-        <input
-          name="soTaiKhoan"
-          value={form.soTaiKhoan}
-          onChange={handleChange}
-          placeholder="VD: 0123456789"
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-      </div>
-
-      {errors.soTaiKhoan && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.soTaiKhoan}
-        </p>
-      )}
-
-    </div>
-
-
-    {/* tên tài khoản */}
-    <div className="flex flex-col w-[480px] items-start gap-[5px]">
-
-      <label className="flex items-center gap-2.5 p-2.5 cursor-pointer">
-        <span className="text-xl text-color-text-main">
-          Tên tài khoản
-        </span>
-      </label>
-
-      <div className="relative w-full">
-        <input
-          name="tenTaiKhoan"
-          value={form.tenTaiKhoan}
-          onChange={handleChange}
-          placeholder="VD: TRAN VAN A"
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-      </div>
-
-      {errors.tenTaiKhoan && (
-        <p className="text-red-500 text-sm mt-1">
-          {errors.tenTaiKhoan}
-        </p>
-      )}
-
-    </div>
-
-
-    <button
-      onClick={handleSubmit}
-      className="w-[480px] bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-semibold"
-    >
-      Tạo tài khoản người bán
-    </button>
-
-  </div>
-
-);
+  );
 
 }

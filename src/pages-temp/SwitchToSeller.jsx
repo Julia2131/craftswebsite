@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import FormInput from "../components/FormInput";
 
 export default function SwitchToSeller({ buyerId }) {
 
@@ -22,36 +23,102 @@ export default function SwitchToSeller({ buyerId }) {
       ...form,
       [name]: value
     });
+
+    setErrors({
+      ...errors,
+      [name]: ""
+    });
   };
 
   const [errors, setErrors] = useState({});
 
-  const handleSubmit = () => {
+  const API = import.meta.env.VITE_API_URL;
+  const userId = localStorage.getItem("register_user_id");
+  
+  const handleSubmit = async () => {
 
     const newErrors = {};
 
+    // tiền nhân công
     if (!form.tienNhanCong) {
       newErrors.tienNhanCong = "Vui lòng nhập tiền nhân công";
+    } else if (!/^\d+$/.test(form.tienNhanCong)) {
+      newErrors.tienNhanCong = "Tiền nhân công phải là số";
     }
 
+    // tiền thương hiệu
+    if (!form.tienThuongHieu) {
+      newErrors.tienThuongHieu = "Vui lòng nhập tiền thương hiệu";
+    } else if (!/^\d+$/.test(form.tienThuongHieu)) {
+      newErrors.tienThuongHieu = "Tiền thương hiệu phải là số";
+    }
+
+    // mã số thuế (10 hoặc 13 số)
     if (!form.maSoThue) {
       newErrors.maSoThue = "Vui lòng nhập mã số thuế";
+    } else if (!/^\d{10}(\d{3})?$/.test(form.maSoThue)) {
+      newErrors.maSoThue = "Mã số thuế phải có 10 hoặc 13 chữ số";
     }
 
+    // mã ngân hàng
+    if (!form.maNganHang) {
+      newErrors.maNganHang = "Vui lòng nhập mã ngân hàng";
+    }
+
+    // số tài khoản
     if (!form.soTaiKhoan) {
       newErrors.soTaiKhoan = "Vui lòng nhập số tài khoản";
+    } else if (!/^\d{6,20}$/.test(form.soTaiKhoan)) {
+      newErrors.soTaiKhoan = "Số tài khoản phải từ 6-20 chữ số";
+    }
+
+    // tên tài khoản
+    if (!form.tenTaiKhoan) {
+      newErrors.tenTaiKhoan = "Vui lòng nhập tên tài khoản";
+    } else if (form.tenTaiKhoan.length < 3) {
+      newErrors.tenTaiKhoan = "Tên tài khoản quá ngắn";
     }
 
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      return; // có lỗi thì dừng
+      return;
     }
 
-    // nếu không lỗi thì call API
     console.log("submit form", form);
+
+    const payload = {
+      nguoiDungId: userId,
+      tienNhanCong: Number(form.tienNhanCong),
+      tienThuongHieu: Number(form.tienThuongHieu),
+      maSoThue: form.maSoThue,
+      nganHang: {
+        maNganHang: form.maNganHang,
+        tenNganHang: form.tenNganHang,
+        soTaiKhoan: form.soTaiKhoan,
+        tenTaiKhoan: form.tenTaiKhoan
+      }
+    };
+
+    const res = await fetch(`${API}/thong-tin-nguoi-ban`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Có lỗi xảy ra");
+    return;
+  }
+
+  console.log(data);
+
+  navigate("/seller/home");
   };
-  const API = import.meta.env.VITE_API_URL;
 
   return (
     <div className="max-w-xl mx-auto flex flex-col gap-6">
@@ -61,129 +128,82 @@ export default function SwitchToSeller({ buyerId }) {
       </h2>
 
       {/* tiền nhân công */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">
-          Tiền nhân công
-        </label>
-
-        <input
-          name="tienNhanCong"
-          value={form.tienNhanCong}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-
-        {errors.tienNhanCong && (
-          <p className="text-red-500 text-sm">
-            {errors.tienNhanCong}
-          </p>
-        )}
-      </div>
+      <FormInput
+        label="Tiền nhân công"
+        name="tienNhanCong"
+        value={form.tienNhanCong}
+        onChange={handleChange}
+        placeholder="Ví dụ: 100000"
+        helper="Số tiền bạn nhận khi hoàn thành sản phẩm"
+        error={errors.tienNhanCong}
+        icon="₫"
+      />
 
       {/* tiền thương hiệu */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">
-          Tiền thương hiệu
-        </label>
-
-        <input
-          name="tienThuongHieu"
-          value={form.tienThuongHieu}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-
-        {errors.tienThuongHieu && (
-          <p className="text-red-500 text-sm">
-            {errors.tienThuongHieu}
-          </p>
-        )}
-      </div>
+      <FormInput
+        label="Tiền thương hiệu"
+        name="tienThuongHieu"
+        value={form.tienThuongHieu}
+        onChange={handleChange}
+        placeholder="Ví dụ: 50000"
+        helper="Chi phí thương hiệu thu trên mỗi sản phẩm"
+        error={errors.tienThuongHieu}
+        icon="₫"
+      />
 
       {/* mã số thuế */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">
-          Mã số thuế
-        </label>
-
-        <input
-          name="maSoThue"
-          value={form.maSoThue}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-
-        {errors.maSoThue && (
-          <p className="text-red-500 text-sm">
-            {errors.maSoThue}
-          </p>
-        )}
-      </div>
+      <FormInput
+        label="Mã số thuế"
+        name="maSoThue"
+        value={form.maSoThue}
+        onChange={handleChange}
+        placeholder="0123456789"
+        helper="Mã số thuế doanh nghiệp (10 hoặc 13 số)"
+        error={errors.maSoThue}
+        icon="🏢"
+      />
 
       <h3 className="text-lg font-semibold mt-4">
         Tài khoản ngân hàng
       </h3>
 
       {/* mã ngân hàng */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">
-          Mã ngân hàng
-        </label>
+      <FormInput
+        label="Mã ngân hàng"
+        name="maNganHang"
+        value={form.maNganHang}
+        onChange={handleChange}
+        placeholder="VCB"
+        helper="Ví dụ: VCB, TCB, BIDV"
+        error={errors.maNganHang}
+        icon="🏦"
+      />
 
-        <input
-          name="maNganHang"
-          value={form.maNganHang}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-
-        {errors.maNganHang && (
-          <p className="text-red-500 text-sm">
-            {errors.maNganHang}
-          </p>
-        )}
-      </div>
 
       {/* số tài khoản */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">
-          Số tài khoản
-        </label>
-
-        <input
-          name="soTaiKhoan"
-          value={form.soTaiKhoan}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-
-        {errors.soTaiKhoan && (
-          <p className="text-red-500 text-sm">
-            {errors.soTaiKhoan}
-          </p>
-        )}
-      </div>
+      <FormInput
+        label="Số tài khoản"
+        name="soTaiKhoan"
+        value={form.soTaiKhoan}
+        onChange={handleChange}
+        placeholder="1234567890"
+        helper="6–20 chữ số"
+        error={errors.soTaiKhoan}
+        icon="💳"
+      />
 
       {/* tên tài khoản */}
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium">
-          Tên tài khoản
-        </label>
-
-        <input
-          name="tenTaiKhoan"
-          value={form.tenTaiKhoan}
-          onChange={handleChange}
-          className="w-full rounded-md border border-slate-300 px-4 py-4 outline-none focus:border-blue-500"
-        />
-
-        {errors.tenTaiKhoan && (
-          <p className="text-red-500 text-sm">
-            {errors.tenTaiKhoan}
-          </p>
-        )}
-      </div>
-
+      <FormInput
+        label="Tên tài khoản"
+        name="tenTaiKhoan"
+        value={form.tenTaiKhoan}
+        onChange={handleChange}
+        placeholder="NGUYEN VAN A"
+        helper="Phải trùng với tên trên ngân hàng"
+        error={errors.tenTaiKhoan}
+        icon="👤"
+      />
+      
       {/* button */}
       <button
         onClick={handleSubmit}

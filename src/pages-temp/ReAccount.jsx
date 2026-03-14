@@ -79,15 +79,6 @@ export default function ResetAccount() {
     localStorage.setItem("craft_user", JSON.stringify(data));
 
     navigate("/");
-
-    const user = {
-      name,
-      resetAt: new Date().toISOString(),
-    };
-
-    localStorage.setItem("craft_user", JSON.stringify(user));
-
-    navigate("/");
   };
 
   const handleNameChange = (e) => {
@@ -229,6 +220,7 @@ export default function ResetAccount() {
                 value={confirm}
                 onChange={handleConfirmChange}
                 type={showRePass ? "text" : "password"}
+                // autoComplete="new-password"
                 placeholder="Nhập lại mật khẩu"
                 className="w-full rounded-md border border-slate-300 px-4 py-4 pr-12 outline-none focus:border-blue-500"
               />

@@ -28,15 +28,16 @@ export default function Log() {
         }),
       });
 
-      const success = await res.json();
+      const data = await res.json();
 
-      if (success) {
+      if (data.success) {
         const user = {
           name: username,
           loginAt: new Date().toISOString(),
         };
 
         localStorage.setItem("craft_user", JSON.stringify(user));
+        localStorage.setItem("register_user_id", data.userId);
         window.dispatchEvent(new Event("craft_user_updated"));
 
         navigate("/");
