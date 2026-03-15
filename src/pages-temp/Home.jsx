@@ -93,23 +93,41 @@ export default function Home() {
   // click "Kênh người bán"
   const handleOpenSeller = async () => {
 
-    try {
+    const userId = localStorage.getItem("register_user_id");
 
-      const buyerId = user?.id; // localStorage.setItem("register_user_id")
-      const res = await fetch(`${API}/thong-tin-nguoi-ban/check/${buyerId}`);
-
-      const data = await res.json();
-
-      if (data.exists) {
-        navigate("/switch-to-seller");
-      } else {
-        navigate("/seller/home");
-      }
-
-    } catch (err) {
-      console.error(err.value);
+    if (!userId) {
+      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
+      navigate("/log");
+      return;
     }
 
+    try {
+
+      const res = await fetch(`${API}/thong-tin-nguoi-ban/by-user/${userId}`);
+
+      // chưa có seller
+      if (res.status === 404) {
+        navigate("/switch-to-seller");
+        return;
+      }
+
+      // lỗi server
+      if (!res.ok) {
+        console.error("Server error:", res.status);
+        return;
+      }
+
+      const sellerId = await res.json();
+
+      console.log("sellerId:", sellerId);
+
+      localStorage.setItem("register_seller_id", sellerId);
+
+      navigate("/seller/home");
+
+    } catch (err) {
+      console.error("Seller navigation error:", err);
+    }
   };
 
   return (
@@ -123,7 +141,7 @@ export default function Home() {
               <Link
                 to="/switch-to-seller"
                 className="hover:underline text-sm font-medium text-slate-800"
-                onclick={handleOpenSeller}
+                onClick={handleOpenSeller}
               >
                 Kênh người bán
               </Link>
