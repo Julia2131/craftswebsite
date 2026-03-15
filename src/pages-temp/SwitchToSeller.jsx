@@ -39,6 +39,13 @@ export default function SwitchToSeller({ buyerId }) {
 
     const newErrors = {};
 
+    const userId = localStorage.getItem("register_user_id");
+    if (!userId) {
+      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
+      navigate("/log");
+      return;
+    }
+
     // tiền nhân công
     if (!form.tienNhanCong) {
       newErrors.tienNhanCong = "Vui lòng nhập tiền nhân công";
@@ -87,37 +94,55 @@ export default function SwitchToSeller({ buyerId }) {
 
     console.log("submit form", form);
 
-    const payload = {
-      nguoiDungId: userId,
-      tienNhanCong: Number(form.tienNhanCong),
-      tienThuongHieu: Number(form.tienThuongHieu),
-      maSoThue: form.maSoThue,
-      nganHang: {
-        maNganHang: form.maNganHang,
-        tenNganHang: form.tenNganHang,
-        soTaiKhoan: form.soTaiKhoan,
-        tenTaiKhoan: form.tenTaiKhoan
+    try {
+      const payload = {
+        nguoiDungId: userId,
+        tienNhanCong: Number(form.tienNhanCong),
+        tienThuongHieu: Number(form.tienThuongHieu),
+        maSoThue: form.maSoThue,
+        nganHang: {
+          maNganHang: form.maNganHang,
+          tenNganHang: form.tenNganHang,
+          soTaiKhoan: form.soTaiKhoan,
+          tenTaiKhoan: form.tenTaiKhoan
+        }
+      };
+
+      const res = await fetch(`${API}/thong-tin-nguoi-ban`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Có lỗi xảy ra");
+        return;
       }
-    };
 
-    const res = await fetch(`${API}/thong-tin-nguoi-ban`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
+      console.log(data);
 
-  const data = await res.json();
+      try{
+        //gọi API lấy sellerId
+        const sellerRes = await fetch(`${API}/thong-tin-nguoi-ban/by-user/${userId}`);
+        const sellerId = await sellerRes.json();
 
-  if (!res.ok) {
-    alert(data.error || "Có lỗi xảy ra");
-    return;
-  }
+        //lưu sellerId
+        localStorage.setItem("register_seller_id", sellerId);
 
-  console.log(data);
+        console.log("register_seller_id:", sellerId);
+      }catch(err){
+        console.error(`Lỗi khi lấy sellerId: ${err}`);
+      }
 
-  navigate("/seller/home");
+      navigate("/seller/home");
+    } catch (err) {
+      console.error(`Lỗi khi tạo tài khoản người bán: ${err}`);
+      alert("Có lỗi xảy ra khi tạo tài khoản người bán");
+    }
   };
 
   return (

@@ -73,7 +73,7 @@ export default function ResetAccount() {
     const data = await res.json();
 
     // xóa register session
-    localStorage.removeItem("register_user_id");
+    // localStorage.removeItem("register_user_id");
 
     // login local
     localStorage.setItem("craft_user", JSON.stringify(data));
