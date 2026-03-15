@@ -8,6 +8,7 @@ import ResetAccount from "./pages-temp/ReAccount.jsx";
 import SwitchToSeller from "./pages-temp/SwitchToSeller.jsx";
 import Dashboard from "./pages-temp/seller/Dashboard.jsx";
 import SellerLayout from "./layouts/SellerLayout.jsx";
+import { PostCreateReadyMade } from "./pages-temp/seller/PostCreateReadyMade.jsx";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/switch-to-seller" element={<SwitchToSeller />} />
         <Route path="/seller" element={<SellerLayout />}>
           <Route path="home" element={<Dashboard />} />
+          <Route path="post-create-ready-made" element={<PostCreateReadyMade />} />
         </Route>
       </Routes>
     </BrowserRouter>

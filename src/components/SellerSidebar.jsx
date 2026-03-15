@@ -39,7 +39,7 @@ export default function SellerSidebar() {
   };
 
   return (
-    <div className="w-60 bg-gray-100 h-screen flex flex-col p-3">
+    <div className="w-60 bg-[#E0E7FF] h-screen flex flex-col p-3">
 
       {menuData.map((section, sectionIndex) => (
         <div key={sectionIndex} className="mb-3">
@@ -47,7 +47,7 @@ export default function SellerSidebar() {
           {/* TITLE */}
           <button
             onClick={() => toggleSection(sectionIndex)}
-            className="flex justify-between items-center w-full font-bold text-gray-700 px-2 py-2 hover:bg-gray-200 rounded"
+            className="flex justify-between items-center w-full font-bold text-gray-700 px-2 py-2 hover:bg-[#6366F1] hover:text-white rounded"
           >
             {section.title}
 
@@ -74,8 +74,8 @@ export default function SellerSidebar() {
                     className={`text-left px-4 py-2 rounded text-sm
                     ${
                       activeItem === key
-                        ? "bg-blue-500 text-white"
-                        : "hover:bg-gray-200"
+                        ? "bg-[#4338CA] text-white"
+                        : "hover:bg-[#6366F1] hover:text-white"
                     }`}
                   >
                     {item}
