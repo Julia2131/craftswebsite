@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
-export default function ImageUploader({ multiple = true, limit = 8, onChange }) {
+export default function ImageUploader({ multiple = true, limit = 8, onChange, value = [] }) {
   const inputRef = useRef(null);
   const [images, setImages] = useState([]);
 
@@ -25,6 +25,8 @@ export default function ImageUploader({ multiple = true, limit = 8, onChange }) 
 
       return updated;
     });
+
+    e.target.value = null;
   };
 
   const removeImage = (index) => {
@@ -38,6 +40,31 @@ export default function ImageUploader({ multiple = true, limit = 8, onChange }) 
       return updated;
     });
   };
+
+  useEffect(() => {
+
+    if (!value || value.length === 0) {
+      setImages([]);
+      return;
+    }
+
+    const imgs = value.map((v) => {
+
+      if (typeof v === "string") {
+        return { file: null, url: v };
+      }
+
+      if (v instanceof File) {
+        return { file: v, url: URL.createObjectURL(v) };
+      }
+
+      return null;
+
+    }).filter(Boolean);
+
+    setImages(imgs);
+
+  }, [value]);
 
   return (
     <div className="grid grid-cols-5 gap-4">

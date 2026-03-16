@@ -12,7 +12,7 @@ function ProductCreateSuccess() {
       primaryActionText="Về trang quản lý"
       onPrimaryAction={() => navigate("/seller/home")}
       secondaryActionText="Tạo sản phẩm mới"
-      onSecondaryAction={() => navigate("/seller/post-create-ready-made")}
+      onSecondaryAction={() => navigate("/seller/product/create")}
     />
   );
 }

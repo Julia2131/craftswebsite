@@ -8,7 +8,7 @@ const menuData = [
   },
   {
     title: "Quản lý sản phẩm",
-    items: ["Tất cả sản phẩm", "Thêm sản phẩm"],
+    items: ["Sản phẩm làm sẵn", "Sản phẩm đặt làm", "Thêm sản phẩm"],
   },
   {
     title: "Chăm sóc khách hàng",
@@ -63,7 +63,11 @@ export default function SellerSidebar() {
                       setActiveItem(key);
 
                       if (item === "Thêm sản phẩm") {
-                        navigate("/seller/post-create-ready-made");
+                        navigate("/seller/product/create");
+                      }
+
+                      if (item === "Sản phẩm làm sẵn"){
+                        navigate("/seller/product/all");
                       }
                     }}
                     className={`text-left px-4 py-2 rounded text-sm
