@@ -31,7 +31,8 @@ export default function SellerProducts() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [products, setProducts] = useState([]);
-    const [search, setSearch] = useState("");
+    const [searchInput, setSearchInput] = useState(""); // user thấy
+    const [search, setSearch] = useState(""); // gửi API
     const [sort, setSort] = useState("desc");
 
     const handleSort = () => {
@@ -40,8 +41,14 @@ export default function SellerProducts() {
     };
 
     useEffect(() => {
-        fetchProducts();
-    }, [page, activeTab, sort]);
+
+        const timer = setTimeout(() => {
+            fetchProducts();
+        }, 400);
+
+        return () => clearTimeout(timer);
+
+    }, [page, activeTab, sort, search]);
 
     const sellerid = localStorage.getItem("register_seller_id");
     if (!sellerid) {
@@ -56,10 +63,11 @@ export default function SellerProducts() {
 
         try {
             const res = await fetch(
-            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&page=${page}&size=10&sort=${sort}`
+            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
             );
+
             console.log(
-            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&page=${page}&size=10&sort=${sort}`
+            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
             );
 
             if (!res.ok) {
@@ -102,45 +110,58 @@ export default function SellerProducts() {
   return (
     <div className="p-6">
 
-      {/* TABS */}
-      <div className="flex gap-4 mb-6">
-        {tabs.map((tab, index) => (
-          <button
-            key={index}
-            onClick={() => {
-                setActiveTab(index);
-                setPage(1);
-            }}
-            className={`px-4 py-2 rounded-lg ${
-              activeTab === index
-                ? "bg-blue-500 text-white font-semibold"
-                : "bg-gray-200"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+        {/* TABS */}
+        <div className="flex gap-4 mb-6">
+            {tabs.map((tab, index) => (
+            <button
+                key={index}
+                onClick={() => {
+                    setActiveTab(index);
+                    setPage(1);
+                }}
+                className={`px-4 py-2 rounded-lg ${
+                activeTab === index
+                    ? "bg-blue-500 text-white font-semibold"
+                    : "bg-gray-200"
+                }`}
+            >
+                {tab}
+            </button>
+            ))}
+        </div>
 
         {/* SEARCH BAR */}
         <div className="mb-4 w-full">
-        <div className="relative w-full">
-            
-            {/* Icon */}
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-            🔍
-            </span>
+            <div className="relative w-full">
+                
+                {/* Icon */}
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                🔍
+                </span>
 
-            {/* Input */}
-            <input
-            type="text"
-            placeholder="Tìm sản phẩm..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full border pl-10 pr-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            
-        </div>
+                {/* Input */}
+                <input
+                type="text"
+                placeholder="Tìm sản phẩm..."
+                value={searchInput}
+                onChange={(e) => {
+
+                    const value = e.target.value;
+
+                    setSearchInput(value); // hiển thị đúng user nhập
+
+                    const normalized = normalizeSearch(value);
+
+                    console.log("User nhập:", value);
+                    console.log("Search gửi API:", normalized);
+
+                    setSearch(normalized); // dùng để gọi API
+                    setPage(1);
+                }}
+                className="w-full border pl-10 pr-3 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                
+            </div>
         </div>
 
         <div className="flex justify-between items-center mb-3 text-sm">
@@ -152,13 +173,12 @@ export default function SellerProducts() {
             <div
                 className="flex items-center gap-2 cursor-pointer hover:text-blue-500"
                 onClick={() => {
-                const newSort = sort === "DESC" ? "ASC" : "DESC";
-                setSort(newSort);
-                fetchProducts();
+                    const newSort = sort === "desc" ? "asc" : "desc";
+                    setSort(newSort);
                 }}
             >
                 Sắp xếp theo hạn gửi hàng 
-                {sort === "DESC" ? "(Xa → Gần)" : "(Gần → Xa)"}
+                {sort === "desc" ? "(Xa → Gần)" : "(Gần → Xa)"}
 
                 <img
                     src={arrows_up_down_circle_Icon}
@@ -168,102 +188,113 @@ export default function SellerProducts() {
 
         </div>
 
-      {/* TABLE */}
-      <div className="bg-white rounded shadow">
+        {/* TABLE */}
+        <div className="bg-white rounded shadow">
 
-        {/* HEADER */}
-        <div className="grid grid-cols-6 gap-[10px] font-bold text-center">
-        {columns.map((col, index) => (
+            {/* HEADER */}
+            <div className="grid grid-cols-6 gap-[10px] font-bold text-center">
+            {columns.map((col, index) => (
+                <div
+                key={index}
+                className="bg-[#6366F1] text-[#E0E7FF] py-2 "
+                >
+                {col}
+                </div>
+            ))}
+            </div>
+
+            {/* ROW */}
+            {products.map((p) => (
             <div
-            key={index}
-            className="bg-[#6366F1] text-[#E0E7FF] py-2 "
+                key={p.id}
+                className="grid grid-cols-6 gap-[10px] items-center border-t p-3 text-center"
             >
-            {col}
+                <div className="flex items-center gap-2 justify-center">
+                    <img src={p.image} className="w-10 h-10 object-cover" />
+                    {p.loaiSanPham}
+                </div>
+
+                <div>{p.gia}</div>
+
+                {p.moTa?.length > 30
+                    ? p.moTa.substring(0, 30) + "..."
+                    : p.moTa}
+
+                <div className="text-sm">{p.soLuongBanDau}</div>
+
+                <div>{p.chungChiId}</div>
+
+                <div className="flex justify-center gap-3">
+                <img
+                    src={detailIcon}
+                    className="w-5 h-5 cursor-pointer hover:scale-110 transition"
+                    onClick={() => handleDetail(p.id)}
+                />
+
+                <img
+                    src={editIcon}
+                    className="w-5 h-5 cursor-pointer hover:scale-110 transition"
+                    onClick={() => handleEdit(p.id)}
+                />
+
+                <img
+                    src={deleteIcon}
+                    className="w-5 h-5 cursor-pointer hover:scale-110 transition"
+                    onClick={() => handleDelete(p.id)}
+                />
+                </div>
             </div>
-        ))}
+            ))}
         </div>
 
-        {/* ROW */}
-        {products.map((p) => (
-        <div
-            key={p.id}
-            className="grid grid-cols-6 gap-[10px] items-center border-t p-3 text-center"
-        >
-            <div className="flex items-center gap-2 justify-center">
-                <img src={p.image} className="w-10 h-10 object-cover" />
-                {p.loaiSanPham}
-            </div>
+        {/* PAGINATION */}
+        <div className="flex justify-center items-center gap-2 mt-6">
 
-            <div>{p.gia}</div>
-
-            {p.moTa?.length > 30
-                ? p.moTa.substring(0, 30) + "..."
-                : p.moTa}
-
-            <div className="text-sm">{p.soLuongBanDau}</div>
-
-            <div>{p.chungChiId}</div>
-
-            <div className="flex justify-center gap-3">
-            <img
-                src={detailIcon}
-                className="w-5 h-5 cursor-pointer hover:scale-110 transition"
-                onClick={() => handleDetail(p.id)}
-            />
-
-            <img
-                src={editIcon}
-                className="w-5 h-5 cursor-pointer hover:scale-110 transition"
-                onClick={() => handleEdit(p.id)}
-            />
-
-            <img
-                src={deleteIcon}
-                className="w-5 h-5 cursor-pointer hover:scale-110 transition"
-                onClick={() => handleDelete(p.id)}
-            />
-            </div>
-        </div>
-        ))}
-      </div>
-
-      {/* PAGINATION */}
-    <div className="flex justify-center items-center gap-2 mt-6">
-
-    {/* PREV */}
-    <button
-        onClick={() => setPage(page - 1)}
-        disabled={page === 1}
-        className="px-3 py-1 border rounded disabled:opacity-40"
-    >
-        Prev
-    </button>
-
-    {/* PAGE NUMBERS */}
-    {Array.from({ length: totalPages }, (_, i) => (
+        {/* PREV */}
         <button
-        key={i}
-        onClick={() => setPage(i + 1)}
-        className={`px-3 py-1 border rounded ${
-            page === i + 1
-            ? "bg-[#6366F1] text-white"
-            : "bg-white"
-        }`}
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 border rounded disabled:opacity-40"
         >
-        {i + 1}
+            Prev
         </button>
-    ))}
 
-    {/* NEXT */}
-    <button
-        onClick={() => setPage(page + 1)}
-        disabled={page === totalPages}
-        className="px-3 py-1 border rounded disabled:opacity-40"
-    >
-        Next
-    </button>
+        {/* PAGE NUMBERS */}
+        {Array.from({ length: totalPages }, (_, i) => (
+            <button
+            key={i}
+            onClick={() => setPage(i + 1)}
+            className={`px-3 py-1 border rounded ${
+                page === i + 1
+                ? "bg-[#6366F1] text-white"
+                : "bg-white"
+            }`}
+            >
+            {i + 1}
+            </button>
+        ))}
 
-    </div>
+        {/* NEXT */}
+        <button
+            onClick={() => setPage(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 border rounded disabled:opacity-40"
+        >
+            Next
+        </button>
+
+        </div>
     </div>
   );
+}
+
+function normalizeSearch(text) {
+  if (!text) return "";
+
+  return text
+    .toLowerCase()                         // lowercase
+    .normalize("NFD")                      // tách dấu
+    .replace(/[\u0300-\u036f]/g, "")       // bỏ dấu tiếng Việt
+    .replace(/đ/g, "d")                    // đ -> d
+    .replace(/[^a-z0-9]/g, "")             // bỏ ký tự đặc biệt + khoảng trắng
 }
