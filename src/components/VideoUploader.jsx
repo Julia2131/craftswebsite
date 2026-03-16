@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
-export default function VideoUploader() {
+export default function VideoUploader({ onChange }) {
   const inputRef = useRef(null);
   const [video, setVideo] = useState(null);
 
@@ -9,25 +9,51 @@ export default function VideoUploader() {
   };
 
   const handleUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const url = URL.createObjectURL(file);
 
-    setVideo({
-      file,
-      url,
-    });
+    const newVideo = { file, url };
+
+    setVideo(newVideo);
+
+    if (onChange) {
+      onChange([file]);
+    }
+
+    // reset input để có thể upload lại cùng file
+    e.target.value = null;
   };
 
   const removeVideo = () => {
+    if (video?.url) {
+      URL.revokeObjectURL(video.url);
+    }
+
     setVideo(null);
+
+    if (onChange) {
+      onChange([]);
+    }
+
+    if (inputRef.current) {
+      inputRef.current.value = null;
+    }
   };
+
+  // cleanup khi component unmount
+  useEffect(() => {
+    return () => {
+      if (video?.url) {
+        URL.revokeObjectURL(video.url);
+      }
+    };
+  }, [video]);
 
   return (
     <div className="w-[240px]">
 
-      {/* VIDEO PREVIEW */}
       {video ? (
         <div className="relative aspect-square border rounded-lg overflow-hidden">
 
@@ -37,7 +63,6 @@ export default function VideoUploader() {
             className="w-full h-full object-cover"
           />
 
-          {/* DELETE BUTTON */}
           <button
             onClick={removeVideo}
             className="
@@ -54,7 +79,6 @@ export default function VideoUploader() {
 
         </div>
       ) : (
-        /* UPLOAD BOX */
         <div
           onClick={handleClick}
           className="
@@ -69,13 +93,11 @@ export default function VideoUploader() {
             transition
           "
         >
-
           <div className="text-3xl font-bold">+</div>
 
           <div className="text-sm mt-1 text-center px-2">
             Tải video lên
           </div>
-
         </div>
       )}
 

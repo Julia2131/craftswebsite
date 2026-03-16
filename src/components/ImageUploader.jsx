@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-export default function ImageUploader({ multiple = true, limit = 8 }) {
+export default function ImageUploader({ multiple = true, limit = 8, onChange }) {
   const inputRef = useRef(null);
   const [images, setImages] = useState([]);
 
@@ -17,13 +17,26 @@ export default function ImageUploader({ multiple = true, limit = 8 }) {
     }));
 
     setImages((prev) => {
-      const updated = [...prev, ...newImages];
-      return updated.slice(0, limit);
+      const updated = [...prev, ...newImages].slice(0, limit);
+
+      if (onChange) {
+        onChange(updated.map((img) => img.file));
+      }
+
+      return updated;
     });
   };
 
   const removeImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImages((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+
+      if (onChange) {
+        onChange(updated.map((img) => img.file));
+      }
+
+      return updated;
+    });
   };
 
   return (
@@ -91,7 +104,6 @@ export default function ImageUploader({ multiple = true, limit = 8 }) {
         onChange={handleUpload}
         className="hidden"
       />
-
     </div>
   );
 }

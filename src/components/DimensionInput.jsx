@@ -1,37 +1,78 @@
 import InputField from "./InputField";
 
-export default function DimensionInput({ value, setValue }) {
+export default function DimensionInput({
+  value,
+  setValue,
+  errors = {},
+  validateSize,
+}) {
   return (
     <div className="grid grid-cols-3 gap-4">
 
       <InputField
-        label="Chiều dài"
+        id="product-length"
+        label="Chiều dài gói hàng"
         type="number"
         suffix="cm"
+        min={0}
         value={value.length}
-        onChange={(e) =>
-          setValue({ ...value, length: e.target.value })
-        }
+        error={errors.length}
+        placeholder="0"
+        helperText="Chiều dài gói hàng"
+        onChange={(e) => {
+          const v = e.target.value;
+
+          setValue({
+            ...value,
+            length: v,
+          });
+
+          validateSize("length", v);
+        }}
       />
 
       <InputField
-        label="Chiều rộng"
+        id="product-width"
+        label="Chiều rộng gói hàng"
         type="number"
         suffix="cm"
+        min={0}
         value={value.width}
-        onChange={(e) =>
-          setValue({ ...value, width: e.target.value })
-        }
+        error={errors.width}
+        placeholder="0"
+        helperText="Chiều rộng gói hàng"
+        onChange={(e) => {
+          const v = e.target.value;
+
+          setValue({
+            ...value,
+            width: v,
+          });
+
+          validateSize("width", v);
+        }}
       />
 
       <InputField
-        label="Chiều cao"
+        id="product-height"
+        label="Chiều cao gói hàng"
         type="number"
         suffix="cm"
+        min={0}
         value={value.height}
-        onChange={(e) =>
-          setValue({ ...value, height: e.target.value })
-        }
+        error={errors.height}
+        placeholder="0"
+        helperText="Chiều cao gói hàng"
+        onChange={(e) => {
+          const v = e.target.value;
+
+          setValue({
+            ...value,
+            height: v,
+          });
+
+          validateSize("height", v);
+        }}
       />
 
     </div>

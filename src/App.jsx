@@ -9,6 +9,7 @@ import SwitchToSeller from "./pages-temp/SwitchToSeller.jsx";
 import Dashboard from "./pages-temp/seller/Dashboard.jsx";
 import SellerLayout from "./layouts/SellerLayout.jsx";
 import { PostCreateReadyMade } from "./pages-temp/seller/PostCreateReadyMade.jsx";
+import ProductCreateSuccess from "./pages-temp/seller/ProductCreateSuccess.jsx"
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/seller" element={<SellerLayout />}>
           <Route path="home" element={<Dashboard />} />
           <Route path="post-create-ready-made" element={<PostCreateReadyMade />} />
+          <Route path="product/success" element={<ProductCreateSuccess />} />
         </Route>
       </Routes>
     </BrowserRouter>

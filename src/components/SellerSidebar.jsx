@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const menuData = [
   {
@@ -30,6 +31,7 @@ const menuData = [
 export default function SellerSidebar() {
   const [activeItem, setActiveItem] = useState(null);
   const [openSections, setOpenSections] = useState({});
+  const navigate = useNavigate();
 
   const toggleSection = (index) => {
     setOpenSections((prev) => ({
@@ -40,37 +42,30 @@ export default function SellerSidebar() {
 
   return (
     <div className="w-60 bg-[#E0E7FF] h-screen flex flex-col p-3">
-
       {menuData.map((section, sectionIndex) => (
         <div key={sectionIndex} className="mb-3">
-
-          {/* TITLE */}
           <button
             onClick={() => toggleSection(sectionIndex)}
             className="flex justify-between items-center w-full font-bold text-gray-700 px-2 py-2 hover:bg-[#6366F1] hover:text-white rounded"
           >
             {section.title}
-
-            <span
-              className={`transition-transform ${
-                openSections[sectionIndex] ? "rotate-180" : ""
-              }`}
-            >
-              ^
-            </span>
           </button>
 
-          {/* ITEMS */}
           {openSections[sectionIndex] && (
             <div className="flex flex-col gap-1 mt-1">
-
               {section.items.map((item, itemIndex) => {
                 const key = `${sectionIndex}-${itemIndex}`;
 
                 return (
                   <button
                     key={key}
-                    onClick={() => setActiveItem(key)}
+                    onClick={() => {
+                      setActiveItem(key);
+
+                      if (item === "Thêm sản phẩm") {
+                        navigate("/seller/post-create-ready-made");
+                      }
+                    }}
                     className={`text-left px-4 py-2 rounded text-sm
                     ${
                       activeItem === key
@@ -82,13 +77,10 @@ export default function SellerSidebar() {
                   </button>
                 );
               })}
-
             </div>
           )}
-
         </div>
       ))}
-
     </div>
   );
 }
