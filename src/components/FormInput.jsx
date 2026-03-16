@@ -31,7 +31,7 @@ export default function FormInput({
         {label}
       </label>
 
-      {/* INPUT + ICON */}
+      {/* INPUT / TEXTAREA */}
       <div className={`flex items-center border rounded-md px-3 py-3 ${borderColor}`}>
 
         {icon && (
@@ -40,23 +40,39 @@ export default function FormInput({
           </span>
         )}
 
-        <input
-          id={name}
-          name={name}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          aria-invalid={!!error}
-          aria-describedby={`${name}-helper`}
-          className="w-full outline-none"
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-        />
+        {type === "textarea" ? (
+          <textarea
+            id={name}
+            name={name}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            aria-invalid={!!error}
+            aria-describedby={`${name}-helper`}
+            rows={5}
+            className="w-full outline-none resize-none"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+          />
+        ) : (
+          <input
+            id={name}
+            name={name}
+            type={type}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            aria-invalid={!!error}
+            aria-describedby={`${name}-helper`}
+            className="w-full outline-none"
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+          />
+        )}
 
       </div>
 
-      {/* HELPER TEXT */}
+      {/* HELPER */}
       {!error && helper && (
         <p
           id={`${name}-helper`}
