@@ -58,7 +58,7 @@ export default function InputField({
         <input
           id={id}
           type={type}
-          value={value}
+          value={value ?? ""}
           onChange={onChange}
           placeholder={placeholder}
           aria-invalid={!!error}

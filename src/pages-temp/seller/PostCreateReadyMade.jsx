@@ -8,6 +8,7 @@ import VideoUploader from "../../components/VideoUploader";
 import FormInput from "../../components/FormInput";
 import { uploadToCloudinary } from "../../services/uploadToCloudinary";
 import UploadLoading from "../../components/UploadLoading";
+import { useParams } from "react-router-dom";
 
 const sections = [
   { id: "images", label: "Hình ảnh sản phẩm" },
@@ -23,127 +24,25 @@ const sections = [
 ];
 
 export const PostCreateReadyMade = () => {
+
+  const API = import.meta.env.VITE_API_URL;
+
   const containerRef = useRef(null);
   const navigate = useNavigate();
   const sectionRefs = useRef({});
   const [activeSection, setActiveSection] = useState("images");
+
   const [categories, setCategories] = useState([]);
+
   const [images, setImages] = useState([]);
   const [cover, setCover] = useState(null);
   const [videos, setVideos] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const uploadFiles = async (files, folder) => {
-
-    if (!files) return [];
-
-    const fileArray = Array.isArray(files) ? files : [files];
-
-    const urls = await Promise.all(
-      fileArray.map(file => uploadToCloudinary(file, folder))
-    );
-
-    return urls;
-  };
-
-  const uploadMedia = async () => {
-
-    const coverUrls = await uploadFiles(cover, "san-pham/cover");
-
-    const imageUrls = await uploadFiles(images, "san-pham/images");
-
-    const videoUrls = await uploadFiles(videos, "san-pham/video");
-
-    return [
-      ...coverUrls,
-      ...imageUrls,
-      ...videoUrls
-    ];
-  };
-
-  const scrollToSection = (id) => {
-    const section = sectionRefs.current[id];
-    if (!section) return;
-
-    const top =
-      section.offsetTop - 80;
-
-    containerRef.current.scrollTo({
-      top,
-      behavior: "smooth",
-    });
-  };
-
-  const handleScroll = () => {
-    const scrollTop = containerRef.current.scrollTop;
-
-    let current = activeSection;
-
-    sections.forEach((sec) => {
-      const el = sectionRefs.current[sec.id];
-      if (!el) return;
-
-      if (scrollTop >= el.offsetTop - 120) {
-        current = sec.id;
-      }
-    });
-
-    setActiveSection(current);
-  };
-
-  const sellerid = localStorage.getItem("register_seller_id");
-  useEffect(() => {
-    if (!sellerid) {
-      alert("Vui lòng đăng nhập trước khi tạo sản phẩm");
-      navigate("/log");
-    }
-  }, []);
-
-  const buildPayload = () => {
-    return {
-      moTa: form.description,
-
-      gia: Number(form.price),
-      giaGoc: Number(form.giaGoc),
-
-      canNang: Number(form.weight),
-
-      chieuDai: Number(form.size.length),
-      chieuRong: Number(form.size.width),
-      chieuCao: Number(form.size.height),
-
-      soLuongBanDau: Number(form.quantity),
-      soLuongHienTai: Number(form.quantity),
-
-      trangThaiSPCS: "LUU_AN",
-
-      sellerId: sellerid,
-      danhMucId: Number(form.categoryId),
-
-      trangThaiSanPham: "NHAP",
-
-      soGioLamViecUocTinh: Number(form.soGioLamViecUocTinh),
-
-      trangThaiChungChi: "LUU_AN"
-    };
-  };
-
-  const API = import.meta.env.VITE_API_URL;
-
-  useEffect(() => {
-    fetch(`${API}/danh-muc`)
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    el.addEventListener("scroll", handleScroll);
-
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, []);
+  const { id } = useParams();
+  const isEdit = !!id;
 
   const [form, setForm] = useState({
     description: "",
@@ -172,72 +71,227 @@ export const PostCreateReadyMade = () => {
     },
   });
 
-  const validateField = (name, value) => {
-    let error = "";
+  useEffect(() => {
 
-    if (name === "quantity") {
-      if (!value) error = "Vui lòng nhập số lượng";
-      else if (value <= 0) error = "Số lượng phải lớn hơn 0";
-    }
+      if (!id) {
 
-    if (name === "price") {
-      if (!value) error = "Vui lòng nhập giá";
-      else if (value <= 0) error = "Giá phải lớn hơn 0";
-    }
+        // reset toàn bộ form khi tạo mới
+        setForm({
+          description: "",
+          price: "",
+          giaGoc: "",
+          weight: "",
+          quantity: "",
+          soGioLamViecUocTinh: "",
+          categoryId: "",
+          size: {
+            length: "",
+            width: "",
+            height: "",
+          }
+        });
 
-    if (name === "weight") {
-      if (value && value <= 0) error = "Cân nặng phải lớn hơn 0";
-    }
+        setImages([]);
+        setVideos([]);
+        setCover(null);
 
-    if (name === "size") {
-      const { length, width, height } = value;
-      if (!length || !width || !height) {
-        error = "Vui lòng nhập đầy đủ kích thước";
-      } 
-      if (length <= 0 || width <= 0 || height <= 0) {
-        error = "Kích thước phải lớn hơn 0";
+        return;
       }
-    }
 
-    if (name === "description") {
-      if (!value) error = "Vui lòng nhập mô tả sản phẩm";
-      else if (value.length < 20)
-        error = "Mô tả phải có ít nhất 20 ký tự";
-    }
+    const fetchProduct = async () => {
 
-    if (name == "worktime"){
-      if (value && value <= 0) error = "Thời gian phải lớn hơn 0";
-    }
+      const res = await fetch(`${API}/san-pham-co-san/${id}`);
+      const data = await res.json();
 
-    setErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
+      console.log("DATA", data);
+
+      setForm({
+        description: data.moTa || "",
+        price: data.gia || "",
+        giaGoc: data.giaGoc || "",
+        weight: data.canNang || "",
+        quantity: data.soLuongBanDau || "",
+
+        soGioLamViecUocTinh: data.sanPham?.soGioLamViecUocTinh || "",
+
+        categoryId: data.sanPham?.danhMuc?.id || "",
+
+        size: {
+          length: data.chieuDai || "",
+          width: data.chieuRong || "",
+          height: data.chieuCao || ""
+        }
+      });
+
+      const links = data.sanPham?.anhVideos?.map(v => v.link) || [];
+
+      const imageLinks = links.filter(l =>
+        l.includes(".jpg") || l.includes(".png") || l.includes(".jpeg")
+      );
+
+      const videoLinks = links.filter(l =>
+        l.includes(".mp4") || l.includes(".mov")
+      );
+
+      console.log("====== ALL MEDIA LINKS ======");
+      console.log("RAW LINKS:", links);
+
+      console.log("------ IMAGE LINKS ------");
+      imageLinks.forEach((link, i) => {
+        console.log(`IMG ${i + 1}:`, link);
+      });
+
+      console.log("------ VIDEO LINKS ------");
+      videoLinks.forEach((link, i) => {
+        console.log(`VIDEO ${i + 1}:`, link);
+      });
+
+      console.log("TOTAL IMG:", imageLinks.length);
+      console.log("TOTAL VIDEO:", videoLinks.length);
+
+      console.log("================================");
+
+      setImages(imageLinks);
+      setVideos(videoLinks);
+
+      if (imageLinks.length > 0) {
+        setCover(imageLinks[0]);
+      }
+
+    };
+
+    fetchProduct();
+
+  }, [id]);
+
+  useEffect(() => {
+    console.log("FORM STATE", form);
+  }, [form]);
+
+  const uploadFiles = async (files, folder) => {
+
+    if (!files) return [];
+
+    const fileArray = (Array.isArray(files) ? files : [files])
+    .filter(f => f);
+
+    const urls = await Promise.all(
+      fileArray.map(file => {
+
+        if (typeof file === "string") return file;
+
+        return uploadToCloudinary(file, folder);
+      })
+    );
+
+    return urls;
   };
 
-  const validateSize = (name, value) => {
-    let error = "";
+  const uploadMedia = async () => {
 
-    if (!value) error = "Không được để trống";
-    else if (Number(value) <= 0)
-      error = "Phải lớn hơn 0";
+    const coverUrls = await uploadFiles(cover, "san-pham/cover");
 
-    setErrors((prev) => ({
-      ...prev,
-      size: {
-        ...prev.size,
-        [name]: error,
-      },
-    }));
+    const imageUrls = await uploadFiles(images, "san-pham/images");
+
+    const videoUrls = await uploadFiles(videos, "san-pham/video");
+
+    return [
+      ...(coverUrls || []),
+      ...(imageUrls || []),
+      ...(videoUrls || [])
+    ];
   };
+
+  const scrollToSection = (id) => {
+    const section = sectionRefs.current[id];
+    if (!section) return;
+
+    const top = section.offsetTop - 80;
+
+    containerRef.current.scrollTo({
+      top,
+      behavior: "smooth",
+    });
+  };
+
+  const handleScroll = () => {
+    const scrollTop = containerRef.current.scrollTop;
+
+    let current = activeSection;
+
+    sections.forEach((sec) => {
+      const el = sectionRefs.current[sec.id];
+      if (!el) return;
+
+      if (scrollTop >= el.offsetTop - 120) {
+        current = sec.id;
+      }
+    });
+
+    setActiveSection(current);
+  };
+
+  const sellerid = localStorage.getItem("register_seller_id");
+
+  useEffect(() => {
+    if (!sellerid) {
+      alert("Vui lòng đăng nhập trước khi tạo sản phẩm");
+      navigate("/log");
+    }
+  }, []);
+
+  const buildPayload = () => {
+    return {
+
+      moTa: form.description,
+
+      gia: Number(form.price),
+      giaGoc: Number(form.giaGoc),
+
+      canNang: Number(form.weight),
+
+      chieuDai: Number(form.size.length),
+      chieuRong: Number(form.size.width),
+      chieuCao: Number(form.size.height),
+
+      soLuongBanDau: Number(form.quantity),
+      soLuongHienTai: Number(form.quantity),
+
+      trangThaiSPCS: "LUU_AN",
+
+      sellerId: sellerid,
+      danhMucId: Number(form.categoryId),
+
+      trangThaiSanPham: "NHAP",
+
+      soGioLamViecUocTinh: Number(form.soGioLamViecUocTinh),
+
+      trangThaiChungChi: "LUU_AN"
+
+    };
+  };
+
+  useEffect(() => {
+    fetch(`${API}/danh-muc`)
+      .then(res => res.json())
+      .then(data => setCategories(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    el.addEventListener("scroll", handleScroll);
+
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const createProduct = async (trangThai) => {
+
     try {
 
       setLoading(true);
       setProgress(20);
 
-      // upload media
       const mediaLinks = await uploadMedia();
 
       setProgress(60);
@@ -249,6 +303,7 @@ export const PostCreateReadyMade = () => {
       payload.trangThaiSPCS = trangThai;
 
       payload.mediaLinks = mediaLinks;
+      console.log("PAYLOAD", payload);
 
       const res = await fetch(`${API}/san-pham-co-san`, {
         method: "POST",
@@ -278,31 +333,63 @@ export const PostCreateReadyMade = () => {
     }
   };
 
+  const updateProduct = async (trangThai) => {
+
+    setLoading(true);
+
+    const mediaLinks = await uploadMedia();
+
+    const payload = buildPayload();
+
+    payload.trangThaiSanPham = trangThai;
+    payload.trangThaiChungChi = trangThai;
+    payload.trangThaiSPCS = trangThai;
+
+    payload.mediaLinks = mediaLinks;
+
+    console.log("PAYLOAD", payload);
+
+    await fetch(`${API}/san-pham-co-san/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    setLoading(false);
+
+    navigate("/seller/product/all");
+  };
+
   return (
     <>
       {loading && (
         <UploadLoading
           progress={progress}
-          title="Đang tạo sản phẩm handmade..."
-          description="Đang tải hình ảnh và video lên hệ thống"
+          title={
+            isEdit
+              ? "Đang cập nhật sản phẩm handmade..."
+              : "Đang tạo sản phẩm handmade..."
+          }
+          description={
+            isEdit
+              ? "Đang cập nhật hình ảnh và video lên hệ thống"
+              : "Đang tải hình ảnh và video lên hệ thống"
+          }
         />
       )}
-      
+
       <div className="flex flex-col h-screen bg-white px-[120px] pt-[40px]">
 
-        {/* HEADING */}
         <h1 className="text-3xl font-bold mb-6">
-          Tạo sản phẩm
+          {isEdit ? "Chỉnh sửa sản phẩm" : "Tạo sản phẩm"}
         </h1>
 
         <div className="flex flex-1 gap-10 overflow-hidden">
 
-          {/* LEFT NAVIGATION */}
-
           <nav className="w-[230px] sticky top-[120px] h-fit">
-
             <div className="flex flex-col gap-2">
-
               {sections.map((item) => (
                 <button
                   key={item.id}
@@ -317,15 +404,10 @@ export const PostCreateReadyMade = () => {
                   {item.label}
                 </button>
               ))}
-
             </div>
           </nav>
 
-          {/* RIGHT CONTENT */}
-
           <div className="flex flex-col flex-1 overflow-hidden">
-
-            {/* SCROLL AREA */}
 
             <div
               ref={containerRef}
@@ -345,36 +427,49 @@ export const PostCreateReadyMade = () => {
                     setForm={setForm}
                     errors={errors}
                     setErrors={setErrors}
-                    validateField={validateField}
-                    validateSize={validateSize}
+                    validateField={() => {}}
+                    validateSize={() => {}}
                     categories={categories}
                     setImages={setImages}
                     setCover={setCover}
                     setVideos={setVideos}
+                    images={images}
+                    cover={cover}
+                    videos={videos}
                   />
                 </div>
               ))}
 
             </div>
 
-            {/* ACTION BUTTONS */}
-
             <div className="flex justify-center gap-6 border-t pt-4 pb-2 bg-white">
 
-              <Button variant="danger">
-                  Hủy
+              <Button variant="danger">Hủy</Button>
+
+              <Button variant="outline">Xem trước</Button>
+
+              <Button
+                variant="primary"
+                onClick={() => {
+                  if (isEdit)
+                    updateProduct("LUU_AN")
+                  else
+                    createProduct("LUU_AN")
+                }}
+              >
+                Lưu và ẩn
               </Button>
 
-              <Button variant="outline">
-                  Xem trước
-              </Button>
-
-              <Button variant="primary" onClick={() => createProduct("LUU_AN")}>
-                  Lưu và ẩn
-              </Button>
-
-              <Button variant="success" onClick={() => createProduct("LUU_HIEN")}>
-                  Lưu và hiển thị
+              <Button
+                variant="success"
+                onClick={() => {
+                  if (isEdit)
+                    updateProduct("LUU_HIEN")
+                  else
+                    createProduct("LUU_HIEN")
+                }}
+              >
+                Lưu và hiển thị
               </Button>
 
             </div>
@@ -385,11 +480,25 @@ export const PostCreateReadyMade = () => {
       </div>
     </>
   );
-
 };
 
-const SectionBlock = ({id, title, form, setForm, errors, setErrors, validateField, validateSize, categories,   setImages, setCover, setVideos,
-}) => {  return (
+const SectionBlock = ({
+  id,
+  title,
+  form,
+  setForm,
+  errors,
+  setErrors,
+  validateField,
+  validateSize,
+  categories,
+  setImages,
+  setCover,
+  setVideos,
+  images,
+  cover,
+  videos
+}) =>  {  return (
     <section className="border-b pb-10">
 
       <h2 className="text-xl font-semibold mb-6">
@@ -399,6 +508,8 @@ const SectionBlock = ({id, title, form, setForm, errors, setErrors, validateFiel
       {id === "images" && (
         <ImageUploader 
           multiple 
+          // value={images ? [images] : []}
+          value={images}
           onChange={(files) => setImages(files)}
         />
       )}
@@ -406,13 +517,18 @@ const SectionBlock = ({id, title, form, setForm, errors, setErrors, validateFiel
       {id === "cover" && (
         <ImageUploader 
           multiple={false} 
-          onChange={(file) => setCover(file)}
+          value={cover ? [cover] : []}
+          // value={cover}
+          // onChange={(file) => setCover(file)}
+          onChange={(files) => setCover(files[0] || null)}
         />
       )}
 
       {id === "videos" && (
         <VideoUploader 
           multiple
+          // value={videos ? [videos] : []}
+          value={videos}
           onChange={(files) => setVideos(files)}
         />
       )}
@@ -562,6 +678,5 @@ const SectionBlock = ({id, title, form, setForm, errors, setErrors, validateFiel
 
     </section>
   );
-
 
 };

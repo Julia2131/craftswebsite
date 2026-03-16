@@ -6,7 +6,8 @@ export default function SellerHeader() {
     const [ten, setTen] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
-    const userId = localStorage.getItem("register_user_id");
+  const userId = localStorage.getItem("register_user_id");
+
 
   useEffect(() => {
     const fetchUserInfo  = async () => {

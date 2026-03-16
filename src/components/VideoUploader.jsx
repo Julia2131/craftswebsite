@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 
-export default function VideoUploader({ onChange }) {
+export default function VideoUploader({ onChange, value = [] }) {
   const inputRef = useRef(null);
   const [video, setVideo] = useState(null);
 
@@ -22,7 +22,6 @@ export default function VideoUploader({ onChange }) {
       onChange([file]);
     }
 
-    // reset input để có thể upload lại cùng file
     e.target.value = null;
   };
 
@@ -50,6 +49,27 @@ export default function VideoUploader({ onChange }) {
       }
     };
   }, [video]);
+
+  useEffect(() => {
+
+    if (!value || value.length === 0) {
+      setVideo(null);
+      return;
+    }
+
+    const v = value[0];
+
+    if (typeof v === "string") {
+      setVideo({ file: null, url: v });
+      return;
+    }
+
+    if (v instanceof File) {
+      const url = URL.createObjectURL(v);
+      setVideo({ file: v, url });
+    }
+
+  }, [value]);
 
   return (
     <div className="w-[240px]">
