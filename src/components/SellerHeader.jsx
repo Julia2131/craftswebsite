@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import chatIcon from "../assets/ChatIcon.png";
+import { useNavigate } from "react-router-dom";
 
 export default function SellerHeader() {
+  const navigate = useNavigate();
   const [anhChanDungUrl, setAnhChanDungUrl] = useState(null);
-    const [ten, setTen] = useState("");
+  const [ten, setTen] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
   const userId = localStorage.getItem("register_user_id");
@@ -42,9 +44,12 @@ export default function SellerHeader() {
     <header className="flex items-center justify-between px-6 py-3 bg-white border-b">
 
       {/* LOGO */}
-      <div className="text-2xl font-bold text-blue-600">
-        LOGO
-      </div>
+    <div 
+      className="text-2xl font-bold text-blue-600 cursor-pointer"
+      onClick={() => navigate("/seller/home")}
+    >
+      LOGO
+    </div>
 
       {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
