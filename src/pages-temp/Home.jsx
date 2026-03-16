@@ -103,19 +103,22 @@ export default function Home() {
           {user ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt="avatar"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center text-sm text-slate-500">
-                      U
-                    </div>
-                  )}
-                </div>
+                <div
+  onClick={() => navigate("/pages-temp/profile")}
+  className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100 cursor-pointer"
+>
+  {user.avatar ? (
+    <img
+      src={user.avatar}
+      alt="avatar"
+      className="h-full w-full object-cover"
+    />
+  ) : (
+    <div className="h-full w-full flex items-center justify-center text-sm text-slate-500">
+      U
+    </div>
+  )}
+</div>
 
                 <div className="leading-tight">
                   <div className="text-sm font-medium text-slate-800">
