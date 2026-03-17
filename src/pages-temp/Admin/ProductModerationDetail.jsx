@@ -169,7 +169,9 @@ export const ProductModerationDetail = () => {
 
         alert("Đã đánh dấu vi phạm");
 
-        navigate("/admin/content-moderation");
+        navigate("/admin/content-moderation", {
+          state: { tab: 2 } 
+        });
 
     } catch (err) {
 

@@ -12,11 +12,19 @@ const tabs = ["Chưa xử lý", "Duyệt", "Ẩn"];
 // "Duyệt" sp ở trạng thái DANG_BAN, 
 // "Ẩn" sp ở trạng thái VI_PHAM
 
-const columns = [
+const columnsPending = [
   "Ảnh sản phẩm",
   "Tên Seller",
   "Ngày tạo",
   "Thao tác",
+];
+
+const columnsProcessed = [
+  "Ảnh sản phẩm",
+  "Tên Seller",
+  "Ngày xử lý",
+  "ID Admin thao tác",
+  "Lý do", 
 ];
 
 const statusMap = {
@@ -41,6 +49,13 @@ export default function ContentModeration() {
     const [searchInput, setSearchInput] = useState(""); // user thấy
     const [search, setSearch] = useState(""); // gửi API
     const [sort, setSort] = useState("desc");
+
+    const isPending = activeTab === 0;
+    const columns = isPending ? columnsPending : columnsProcessed;
+
+    const gridClass = isPending
+        ? "grid grid-cols-4"
+        : "grid grid-cols-5";
 
     const handleSort = () => {
         const newSort = sort === "desc" ? "asc" : "desc";
@@ -183,7 +198,7 @@ export default function ContentModeration() {
         <div className="bg-white rounded shadow">
 
             {/* HEADER */}
-            <div className="grid grid-cols-4 gap-[10px] font-bold text-center">
+            <div className={`${gridClass} gap-[10px] font-bold text-center`}>
             {columns.map((col, index) => (
                 <div
                 key={index}
@@ -198,19 +213,21 @@ export default function ContentModeration() {
             {products.map((p) => (
             <div
                 key={p.id}
-                className="grid grid-cols-4 gap-[10px] items-center border-t p-3 text-center"
+                className={`${gridClass} gap-[10px] items-center border-t p-3 text-center`}
             >
-                {/* Ảnh */}
-                <div className="flex justify-center">
-                <img
-                    src={p.anhSanPham}
-                    className="w-12 h-12 object-cover rounded"
-                />
-                </div>
+            {/* Ảnh */}
+            <div className="flex justify-center">
+            <img
+                src={p.anhSanPham}
+                className="w-12 h-12 object-cover rounded"
+            />
+            </div>
 
-                {/* Seller */}
-                <div>{p.tenSeller}</div>
+            {/* Seller */}
+            <div>{p.tenSeller}</div>
 
+            {isPending ? (
+            <>
                 {/* Ngày tạo */}
                 <div>
                 {new Date(p.ngayTao).toLocaleDateString("vi-VN")}
@@ -218,10 +235,9 @@ export default function ContentModeration() {
 
                 {/* Thao tác */}
                 <div className="flex flex-col justify-center gap-4 text-sm font-medium">
-                
                 <span
                     className="text-green-600 cursor-pointer hover:underline"
-                    onClick={() => handleQuickApprove(p.idSanPhamCoSan)} // hàm sau này
+                    onClick={() => handleQuickApprove(p.idSanPhamCoSan)}
                 >
                     Duyệt nhanh
                 </span>
@@ -232,12 +248,31 @@ export default function ContentModeration() {
                 >
                     Xem chi tiết
                 </span>
-
                 </div>
-            </div>
-            ))}
-        </div>
+            </>
+            ) : (
+            <>
+                {/* Ngày xử lý */}
+                <div>
+                {new Date(p.ngayXuLy || p.ngayTao).toLocaleDateString("vi-VN")}
+                </div>
 
+                {/* ID Admin */}
+                <div>
+                {p.adminId || "N/A"}
+                </div>
+
+                {/* Lý do */}
+                <div className="truncate max-w-[200px]">
+                {p.lyDo || "-"}
+                </div>
+            </>
+            )}
+        </div>
+        )
+        
+        )}
+        </div>
         {/* PAGINATION */}
         <div className="flex justify-center items-center gap-2 mt-6">
 
