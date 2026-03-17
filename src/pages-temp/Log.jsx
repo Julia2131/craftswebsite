@@ -31,16 +31,34 @@ export default function Log() {
       const data = await res.json();
 
       if (data.success) {
+
         const user = {
           name: username,
           loginAt: new Date().toISOString(),
         };
 
         localStorage.setItem("craft_user", JSON.stringify(user));
-        localStorage.setItem("register_user_id", data.userId);
+
+        // lưu roles
+        localStorage.setItem("roles", JSON.stringify(data.roles));
+
         window.dispatchEvent(new Event("craft_user_updated"));
 
-        navigate("/");
+        const roles = data.roles;
+
+        // phân luồng
+        if (roles.includes("SUPER_ADMIN")) {
+          localStorage.setItem("register_admin_id", data.userId);
+          navigate("/admin/home");
+        }
+        else if (roles.includes("SELLER")) {
+          localStorage.setItem("register_seller_id", data.userId);
+          navigate("/seller/home");
+        }
+        else {
+          navigate("/");
+        }
+
       } else {
         alert("Sai tên đăng nhập hoặc mật khẩu");
       }
