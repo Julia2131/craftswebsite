@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "../services/firebase";
 
 export default function SDT() {
   const navigate = useNavigate();
@@ -28,26 +29,54 @@ export default function SDT() {
     </svg>
   );
 
+  // const handleRegister = async () => {
+  //   if (!canSubmit) return;
+
+  //   const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json"
+  //     },
+  //     body: JSON.stringify({
+  //       sdt: phone
+  //     })
+  //   });
+
+  //   const data = await res.json();
+
+  //   // lưu id user
+  //   localStorage.setItem("register_user_id", data.id);
+
+  //   navigate("/register-cccd");
+
+  // };
+
   const handleRegister = async () => {
     if (!canSubmit) return;
 
-    const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        sdt: phone
-      })
-    });
+    try {
+      const appVerifier = window.recaptchaVerifier;
 
-    const data = await res.json();
+      const phoneFormat = phone.replace(/^0/, "+84");
 
-    // lưu id user
-    localStorage.setItem("register_user_id", data.id);
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        phoneFormat,
+        appVerifier
+      );
 
-    navigate("/register-cccd");
+      window.confirmationResult = confirmationResult;  // Mã phiên, Gửi cùng OTP  
 
+      navigate("/verify-otp", { state: { phone } });
+
+    } catch (err) {
+      console.error(err);
+      setError("Không gửi được OTP, thử lại sau");
+
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
+    }
   };
 
   const handlePhoneChange = (e) => {
@@ -66,6 +95,20 @@ export default function SDT() {
       setError("");
     }
   };
+
+  useEffect(() => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth, // ⚠️ phải là tham số đầu tiên
+        "recaptcha-container",
+        {
+          size: "invisible"
+        }
+      );
+
+      window.recaptchaVerifier.render();
+    }
+  }, []);
   
   return (
     <div className="min-h-screen bg-[#f3f5f7] flex items-center justify-center p-6">
@@ -138,6 +181,8 @@ export default function SDT() {
         >
           Đăng ký
         </button>
+
+        <div id="recaptcha-container"></div>
 
       </div>
     </div>

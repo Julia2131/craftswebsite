@@ -11,6 +11,7 @@ import SellerLayout from "./layouts/SellerLayout.jsx";
 import { PostCreateReadyMade } from "./pages-temp/seller/PostCreateReadyMade.jsx";
 import ProductCreateSuccess from "./pages-temp/seller/ProductCreateSuccess.jsx";
 import SellerProducts from "./pages-temp/seller/SellerProducts.jsx";
+import VerifyOTP from "./pages-temp/VerifyOTP.jsx";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/sdt" element={<SDT />} />
         <Route path="/reset-account" element={<ResetAccount />} />
         <Route path="/switch-to-seller" element={<SwitchToSeller />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/seller" element={<SellerLayout />}>
           <Route path="home" element={<Dashboard />} />
           <Route path="product/success" element={<ProductCreateSuccess />} />
