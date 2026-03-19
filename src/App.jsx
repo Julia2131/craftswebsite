@@ -11,6 +11,10 @@ import SellerLayout from "./layouts/SellerLayout.jsx";
 import { PostCreateReadyMade } from "./pages-temp/seller/PostCreateReadyMade.jsx";
 import ProductCreateSuccess from "./pages-temp/seller/ProductCreateSuccess.jsx";
 import SellerProducts from "./pages-temp/seller/SellerProducts.jsx";
+import SuperDashboard from "./pages-temp/Admin/Dashboard.jsx";
+import AdminLayout from "./layouts/AdminLayout.jsx";
+import ContentModeration from "./pages-temp/Admin/ContentModeration.jsx";
+import ProductModerationDetail from "./pages-temp/Admin/ProductModerationDetail.jsx";
 
 export default function App() {
   return (
@@ -22,12 +26,17 @@ export default function App() {
         <Route path="/sdt" element={<SDT />} />
         <Route path="/reset-account" element={<ResetAccount />} />
         <Route path="/switch-to-seller" element={<SwitchToSeller />} />
-        <Route path="/seller" element={<SellerLayout />}>
+        <Route path="/seller" element={<SellerLayout />}> {/* Role SELLER */}
           <Route path="home" element={<Dashboard />} />
           <Route path="product/success" element={<ProductCreateSuccess />} />
           <Route path="product/all" element={<SellerProducts />} />
           <Route path="product/create" element={<PostCreateReadyMade />} />
           <Route path="product/edit/:id" element={<PostCreateReadyMade />} />
+        </Route> {/* Role SUPER_ADMIN */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="home" element={<SuperDashboard />} />
+          <Route path="content-moderation" element={<ContentModeration />} />
+          <Route path="content-moderation/duyet/:id" element={<ProductModerationDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>
