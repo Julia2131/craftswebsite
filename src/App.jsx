@@ -15,17 +15,27 @@ import SuperDashboard from "./pages-temp/Admin/Dashboard.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import ContentModeration from "./pages-temp/Admin/ContentModeration.jsx";
 import ProductModerationDetail from "./pages-temp/Admin/ProductModerationDetail.jsx";
+import Profile from "./pages-temp/Profile.jsx";
+import UserLayout from "./layouts/UserLayout.jsx";
+import Address from "./pages-temp/Address.jsx"
+import OrderList from "./pages-temp/OrderList.jsx";
+import FavoriteSellers from "./pages-temp/FavoriteSellers.jsx";
+
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<UserLayout><Home /></UserLayout>} />
         <Route path="/register-cccd" element={<RegisterCCCD />} />
         <Route path="/log" element={<Log />} />
         <Route path="/sdt" element={<SDT />} />
         <Route path="/reset-account" element={<ResetAccount />} />
         <Route path="/switch-to-seller" element={<SwitchToSeller />} />
+        <Route path="/profile" element={<UserLayout><Profile /></UserLayout>} />
+        <Route path="/address" element={<UserLayout><Address /></UserLayout>} />
+        <Route path="/orders" element={<UserLayout><OrderList /></UserLayout>} />
+        <Route path="/favorites" element={<UserLayout><FavoriteSellers /></UserLayout>} />
         <Route path="/seller" element={<SellerLayout />}> {/* Role SELLER */}
           <Route path="home" element={<Dashboard />} />
           <Route path="product/success" element={<ProductCreateSuccess />} />
