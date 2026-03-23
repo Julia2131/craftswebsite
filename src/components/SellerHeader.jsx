@@ -54,46 +54,8 @@ export default function SellerHeader() {
 
   // click "Kênh người mua"
   const handleOpenUser = async () => {
-     const API = import.meta.env.VITE_API_URL;
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
-      navigate("/log");
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        }
-      });
-
-      // chưa có seller
-      if (res.status === 404) {
-        navigate("/switch-to-seller");
-        return;
-      }
-
-      // lỗi server
-      if (!res.ok) {
-        console.error("Server error:", res.status);
-        return;
-      }
-
-      const sellerId = await res.json();
-
-      console.log("sellerId:", sellerId);
-
-      localStorage.setItem("register_seller_id", sellerId);
-
-      navigate("/seller/home");
-
-    } catch (err) {
-      console.error("Seller navigation error:", err);
-    }
+    const API = import.meta.env.VITE_API_URL;
+    navigate("/");
   };
 
   return (

@@ -29,7 +29,7 @@ export default function Header() {
     };
   }, []);
 
-    // click "Kênh người bán"
+  // click "Kênh người bán"
   const handleOpenSeller = async () => {
      const API = import.meta.env.VITE_API_URL;
 
