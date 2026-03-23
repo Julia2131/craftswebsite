@@ -59,6 +59,17 @@ export default function Profile() {
     alert("Đã lưu hồ sơ thành công!");
   };
 
+  const logout = () => {
+    // 1. Xóa user
+    localStorage.removeItem("craft_user");
+
+    // 2. Trigger update cho các component (Header sẽ cập nhật ngay)
+    window.dispatchEvent(new Event("craft_user_updated"));
+
+    // 3. Điều hướng
+    navigate("/");
+  };
+
   return (
     // XÓA THẺ <Layout> Ở ĐÂY - CHỈ GIỮ LẠI <section>
     <section className="mx-auto max-w-6xl px-4 py-8">
@@ -133,6 +144,12 @@ export default function Profile() {
                   className="bg-blue-600 text-white px-12 py-2.5 rounded-md hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all font-medium"
                 >
                   Lưu thay đổi
+                </button>
+                <button 
+                  onClick={logout} 
+                  className="bg-blue-300 text-white px-12 py-2.5 rounded-md hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all font-medium"
+                >
+                  Đăng xuất
                 </button>
               </div>
             </div>

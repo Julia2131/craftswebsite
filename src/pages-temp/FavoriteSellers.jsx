@@ -1,5 +1,4 @@
 import React from "react";
-import Layout from "../components/Layout";
 import Sidebar from "../components/Sidebar";
 
 export default function FavoriteSellers() {
@@ -10,7 +9,6 @@ export default function FavoriteSellers() {
   ];
 
   return (
-    // <Layout>
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex gap-8">
           <Sidebar />
@@ -36,6 +34,5 @@ export default function FavoriteSellers() {
           </div>
         </div>
       </section>
-    // </Layout>
   );
 }

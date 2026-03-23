@@ -1,8 +1,8 @@
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
-export default function Layout({ children }) {
+export default function UserLayout({ children }) {
   return (
     <div className="min-h-screen bg-[#f3f3f3] flex flex-col font-sans selection:bg-blue-100 selection:text-blue-900">
       <Header />
