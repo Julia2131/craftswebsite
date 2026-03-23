@@ -34,7 +34,8 @@ export default function SDT() {
     const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify({
         sdt: phone
@@ -44,7 +45,8 @@ export default function SDT() {
     const data = await res.json();
 
     // lưu id user
-    localStorage.setItem("register_user_id", data.id);
+    // localStorage.setItem("token", data.id);
+    localStorage.setItem("token", data.token);
 
     navigate("/register-cccd");
 

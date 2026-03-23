@@ -33,13 +33,13 @@ export default function SwitchToSeller({ buyerId }) {
   const [errors, setErrors] = useState({});
 
   const API = import.meta.env.VITE_API_URL;
-  const userId = localStorage.getItem("register_user_id");
+  const userId = localStorage.getItem("token");
   
   const handleSubmit = async () => {
 
     const newErrors = {};
 
-    const userId = localStorage.getItem("register_user_id");
+    const userId = localStorage.getItem("token");
     if (!userId) {
       alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
       navigate("/log");
@@ -111,7 +111,8 @@ export default function SwitchToSeller({ buyerId }) {
       const res = await fetch(`${API}/thong-tin-nguoi-ban`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify(payload)
       });
@@ -127,11 +128,15 @@ export default function SwitchToSeller({ buyerId }) {
 
       try{
         //gọi API lấy sellerId
-        const sellerRes = await fetch(`${API}/thong-tin-nguoi-ban/by-user/${userId}`);
+        const sellerRes = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
         const sellerId = await sellerRes.json();
 
         //lưu sellerId
-        localStorage.setItem("register_seller_id", sellerId);
+        // localStorage.setItem("register_seller_id", sellerId);
 
         console.log("register_seller_id:", sellerId);
       }catch(err){

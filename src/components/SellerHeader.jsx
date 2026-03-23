@@ -8,14 +8,18 @@ export default function SellerHeader() {
   const [ten, setTen] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
-  const userId = localStorage.getItem("register_user_id");
+  const userId = localStorage.getItem("token");
 
 
   useEffect(() => {
     const fetchUserInfo  = async () => {
         try {
             // Lấy ảnh chân dung từ backend
-            const res = await fetch(`${API}/nguoi-dung/${userId}/anh-chan-dung`);
+            const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
+              headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
             const data = await res.json();
             if(data.success) {
                 setAnhChanDungUrl(data.anhChanDungUrl);
@@ -23,7 +27,11 @@ export default function SellerHeader() {
                 console.error("Lỗi khi lấy ảnh chân dung:", data.message);
             }
             // Lấy tên người dùng từ backend
-            const resTen = await fetch(`${API}/nguoi-dung/${userId}/ten`);
+            const resTen = await fetch(`${API}/nguoi-dung/me/ten`, {
+              headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+              }
+            });
             const dataTen = await resTen.json();
             if(dataTen.success) {
                 setTen(dataTen.ten);

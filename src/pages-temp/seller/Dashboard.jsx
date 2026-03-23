@@ -19,7 +19,11 @@ export default function Dashboard() {
 
         const res = await fetch(
           `${API}/san-pham/${ttnbId}/dang-ban/count`
-        );
+        , {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
 
         const data = await res.json();
 

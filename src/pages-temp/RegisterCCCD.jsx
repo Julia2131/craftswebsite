@@ -37,14 +37,15 @@ export default function RegisterCCCD() {
     const imageUrl = await uploadToCloudinary(f, "cccd");
     setImageUrl(imageUrl);
 
-    const userId = localStorage.getItem("register_user_id");
+    const userId = localStorage.getItem("token");
     
     const API = import.meta.env.VITE_API_URL;
     
     const res = await fetch(`${API}/nguoi-dung/scan-cccd`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify({
         userId: userId,

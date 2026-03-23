@@ -18,14 +18,23 @@ export default function AdminHeader() {
 
         if (!adminId) return;
 
-        const res = await fetch(`${API}/nguoi-dung/${adminId}/anh-chan-dung`);
+        const res = await fetch(`${API}/nguoi-dung/${adminId}/anh-chan-dung`, {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
         const data = await res.json();
 
         if (data.success && data.anhChanDungUrl) {
           setAnhChanDungUrl(data.anhChanDungUrl);
         }
 
-        const resTen = await fetch(`${API}/nguoi-dung/${adminId}/ten`);
+        const resTen = await fetch(`${API}/nguoi-dung/${adminId}/ten`, {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        });
         const dataTen = await resTen.json();
 
         if (dataTen.success && dataTen.ten) {

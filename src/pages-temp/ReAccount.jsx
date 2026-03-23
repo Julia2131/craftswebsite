@@ -39,7 +39,11 @@ export default function ResetAccount() {
   );
 
   useEffect(() => {
-    fetch(`${API}/nguoi-dung/ten-dang-nhap`)
+    fetch(`${API}/nguoi-dung/ten-dang-nhap`, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    })
       .then((res) => res.json())
       .then((data) => {
         setUsernameList(data);
@@ -56,12 +60,13 @@ export default function ResetAccount() {
   const handleSubmit = async () => {
     if (!valid) return;
 
-    const userId = localStorage.getItem("register_user_id");
+    const userId = localStorage.getItem("token");
 
     const res = await fetch(`${API}/nguoi-dung/set-password`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify({
         userId: userId,
@@ -73,7 +78,7 @@ export default function ResetAccount() {
     const data = await res.json();
 
     // xóa register session
-    // localStorage.removeItem("register_user_id");
+    // localStorage.removeItem("token");
 
     // login local
     localStorage.setItem("craft_user", JSON.stringify(data));

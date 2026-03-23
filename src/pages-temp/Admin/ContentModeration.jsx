@@ -86,10 +86,14 @@ export default function ContentModeration() {
 
         try {
             const res = await fetch(
-            `${API}/san-pham-co-san/moderation-products?status=${status}&search=${search}&page=${page-1}&size=10&sort=${sort}`);
+            `${API}/san-pham-co-san/moderation-products?status=${status}&search=${search}&page=${page-1}&size=10&sort=${sort}`, {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+            });
 
-            console.log(
-            `${API}/san-pham-co-san/moderation-products?status=${status}&search=${search}&page=${page-1}&size=10&sort=${sort}`            );
+            // console.log(
+            // `${API}/san-pham-co-san/moderation-products?status=${status}&search=${search}&page=${page-1}&size=10&sort=${sort}`            );
 
             if (!res.ok) {
                 console.error("API error", res.status);

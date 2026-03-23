@@ -93,17 +93,20 @@ export default function Home() {
   // click "Kênh người bán"
   const handleOpenSeller = async () => {
 
-    const userId = localStorage.getItem("register_user_id");
+    const token = localStorage.getItem("token");
 
-    if (!userId) {
+    if (!token) {
       alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
       navigate("/log");
       return;
     }
 
     try {
-
-      const res = await fetch(`${API}/thong-tin-nguoi-ban/by-user/${userId}`);
+      const res = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
 
       // chưa có seller
       if (res.status === 404) {

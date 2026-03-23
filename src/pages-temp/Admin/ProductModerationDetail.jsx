@@ -55,7 +55,11 @@ export const ProductModerationDetail = () => {
 
     const fetchProduct = async () => {
 
-      const res = await fetch(`${API}/san-pham-co-san/${id}`);
+      const res = await fetch(`${API}/san-pham-co-san/${id}`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       const data = await res.json();
 
       setForm({
@@ -100,7 +104,11 @@ export const ProductModerationDetail = () => {
   }, [id]);
 
   useEffect(() => {
-    fetch(`${API}/danh-muc`)
+    fetch(`${API}/danh-muc`, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    })
       .then(res => res.json())
       .then(data => setCategories(data));
   }, []);
@@ -119,7 +127,8 @@ export const ProductModerationDetail = () => {
         {
             method: "POST",
             headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
             },
             body: JSON.stringify(reason)
         }
@@ -157,7 +166,8 @@ export const ProductModerationDetail = () => {
         {
             method: "POST",
             headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
             },
             body: JSON.stringify(reason)
         }
