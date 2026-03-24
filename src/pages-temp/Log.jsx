@@ -38,7 +38,7 @@ export default function Log() {
           loginAt: new Date().toISOString(),
         };
 
-        localStorage.setItem("craft_user", JSON.stringify(user));
+        // localStorage.setItem("craft_user", JSON.stringify(user));
 
         // lưu token 
         localStorage.setItem("token", data.token);

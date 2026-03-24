@@ -7,20 +7,44 @@ import searchIcon from "../assets/Icon.png";
 export default function Header() {
   const navigate = useNavigate();
   
-  // 1. Quản lý trạng thái user (Lấy từ localStorage)
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("craft_user")) || null;
-    } catch {
-      return null;
-    }
-  });
+  const [image, setImage] = useState("");
+  const [name, setname] = useState("");
+  
+  const token = localStorage.getItem("token");
+
+  const API = import.meta.env.VITE_API_URL;
 
   // 2. Lắng nghe sự kiện đăng nhập/đăng xuất để cập nhật Header ngay lập tức
   useEffect(() => {
-    const handleSync = () => {
-      setUser(JSON.parse(localStorage.getItem("craft_user")) || null);
+    const handleSync = async () => {
+
+      if (!token) {
+        setUser(null);
+        setImage("");
+        setname("");
+        return;
+      }
+
+      const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (!res.ok) {
+        console.error("API lỗi:", res.status);
+        return;
+      }
+
+      const data = await res.json();
+      setImage(data.anhChanDungUrl);
+      localStorage.setItem("anhChanDungUrl", data.anhChanDungUrl);
+      setname(localStorage.getItem("tenDangNhap"));
+
     };
+
+    handleSync();
+
     window.addEventListener("craft_user_updated", handleSync);
     window.addEventListener("storage", handleSync); // Đồng bộ giữa các tab
     return () => {
@@ -31,10 +55,6 @@ export default function Header() {
 
   // click "Kênh người bán"
   const handleOpenSeller = async () => {
-     const API = import.meta.env.VITE_API_URL;
-
-    const token = localStorage.getItem("token");
-
     if (!token) {
       alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
       navigate("/log");
@@ -44,7 +64,7 @@ export default function Header() {
     try {
       const res = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
         headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+          "Authorization": `Bearer ${token}`
         }
       });
 
@@ -125,14 +145,14 @@ export default function Header() {
           </button>
 
           {/* SỬA LỖI 1: Kiểm tra user để hiện "Đăng nhập" hoặc "Thông tin cá nhân" */}
-          {user ? (
+          {token ? (
             <div 
               className="flex items-center gap-2 border-l pl-5 cursor-pointer hover:opacity-80 transition-all"
               onClick={() => navigate("/profile")}
             >
               <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 border border-gray-100">
-                {user.avatar ? (
-                  <img src={user.avatar} className="h-full w-full object-cover" alt="avatar" />
+                {image ? (
+                  <img src={image} className="h-full w-full object-cover" alt="avatar" />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-gray-400">
                     <User size={18} />
@@ -140,7 +160,7 @@ export default function Header() {
                 )}
               </div>
               <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
-                {user.name || "Người dùng"}
+                {name || "Người dùng"}
               </span>
             </div>
           ) : (

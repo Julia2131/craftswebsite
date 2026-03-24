@@ -69,7 +69,6 @@ export default function ResetAccount() {
         "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify({
-        userId: userId,
         password: password,
         tenDangNhap: name
       })
@@ -77,11 +76,8 @@ export default function ResetAccount() {
 
     const data = await res.json();
 
-    // xóa register session
-    // localStorage.removeItem("token");
-
-    // login local
-    localStorage.setItem("craft_user", JSON.stringify(data));
+    localStorage.setItem("tenDangNhap", data.tenDangNhap);
+    localStorage.setItem("trangThaiXacThuc", data.trangThaiXacThuc);
 
     navigate("/");
   };

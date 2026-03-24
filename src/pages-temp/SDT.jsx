@@ -30,12 +30,10 @@ export default function SDT() {
 
   const handleRegister = async () => {
     if (!canSubmit) return;
-
     const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         sdt: phone
@@ -44,8 +42,11 @@ export default function SDT() {
 
     const data = await res.json();
 
-    // lưu id user
-    // localStorage.setItem("token", data.id);
+    if (!data.success) {
+      alert(data.message);
+      return;
+    }
+
     localStorage.setItem("token", data.token);
 
     navigate("/register-cccd");
@@ -78,7 +79,7 @@ export default function SDT() {
           <h1 className="text-3xl font-semibold">Đăng ký</h1>
 
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/log")}
             className="text-blue-600 font-medium hover:underline"
           >
             Đăng nhập
