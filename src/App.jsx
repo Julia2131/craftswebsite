@@ -21,7 +21,6 @@ import Address from "./pages-temp/Address.jsx"
 import OrderList from "./pages-temp/OrderList.jsx";
 import FavoriteSellers from "./pages-temp/FavoriteSellers.jsx";
 
-
 export default function App() {
   return (
     <BrowserRouter>

@@ -141,7 +141,6 @@ export default function Profile() {
                   ))}
                 </div>
               </div>
-
               <div className="pl-[50px] pt-4 flex gap-4">
                 <button 
                   onClick={handleSave} 

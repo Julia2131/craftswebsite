@@ -51,7 +51,6 @@ export default function SellerHeader() {
     }
     }, [userId, API]);
 
-
   // click "Kênh người mua"
   const handleOpenUser = async () => {
     const API = import.meta.env.VITE_API_URL;
