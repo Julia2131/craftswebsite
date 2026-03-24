@@ -33,14 +33,13 @@ export default function SwitchToSeller({ buyerId }) {
   const [errors, setErrors] = useState({});
 
   const API = import.meta.env.VITE_API_URL;
-  const userId = localStorage.getItem("register_user_id");
+  const token = localStorage.getItem("token");
   
   const handleSubmit = async () => {
 
     const newErrors = {};
 
-    const userId = localStorage.getItem("register_user_id");
-    if (!userId) {
+    if (!token) {
       alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
       navigate("/log");
       return;
@@ -96,7 +95,6 @@ export default function SwitchToSeller({ buyerId }) {
 
     try {
       const payload = {
-        nguoiDungId: userId,
         tienNhanCong: Number(form.tienNhanCong),
         tienThuongHieu: Number(form.tienThuongHieu),
         maSoThue: form.maSoThue,
@@ -111,7 +109,8 @@ export default function SwitchToSeller({ buyerId }) {
       const res = await fetch(`${API}/thong-tin-nguoi-ban`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(payload)
       });
@@ -125,18 +124,22 @@ export default function SwitchToSeller({ buyerId }) {
 
       console.log(data);
 
-      try{
-        //gọi API lấy sellerId
-        const sellerRes = await fetch(`${API}/thong-tin-nguoi-ban/by-user/${userId}`);
-        const sellerId = await sellerRes.json();
+      // try{
+      //   //gọi API lấy sellerId
+      //   const sellerRes = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
+      //     headers: {
+      //       "Authorization": `Bearer ${localStorage.getItem("token")}`
+      //     }
+      //   });
+      //   const sellerId = await sellerRes.json();
 
-        //lưu sellerId
-        localStorage.setItem("register_seller_id", sellerId);
+      //   //lưu sellerId
+      //   // localStorage.setItem("register_seller_id", sellerId);
 
-        console.log("register_seller_id:", sellerId);
-      }catch(err){
-        console.error(`Lỗi khi lấy sellerId: ${err}`);
-      }
+      //   console.log("register_seller_id:", sellerId);
+      // }catch(err){
+      //   console.error(`Lỗi khi lấy sellerId: ${err}`);
+      // }
 
       navigate("/seller/home");
     } catch (err) {

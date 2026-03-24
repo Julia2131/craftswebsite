@@ -32,45 +32,49 @@ export default function RegisterCCCD() {
     setPreviewUrl(url);
 
     try {
+      const imageUrl = await uploadToCloudinary(f, "cccd");
 
-    // upload ảnh
-    const imageUrl = await uploadToCloudinary(f, "cccd");
-    setImageUrl(imageUrl);
+      setImageUrl(imageUrl);
 
-    const userId = localStorage.getItem("register_user_id");
-    
-    const API = import.meta.env.VITE_API_URL;
-    
-    const res = await fetch(`${API}/nguoi-dung/scan-cccd`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        userId: userId,
-        imageUrl: imageUrl
-      })
-    });
+      const token = localStorage.getItem("token");
+      
+      const API = import.meta.env.VITE_API_URL;
+      
+      const res = await fetch(`${API}/nguoi-dung/scan-cccd`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          imageUrl: imageUrl
+        })
+      });
 
-    const data = await res.json();
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
 
-    setCccdInfo(data);
+      const data = await res.json();
 
-    setIsConverted(true);
+      setCccdInfo(data);
 
-  } catch (err) {
+      setIsConverted(true);
 
-    console.error(err);
-    alert("Không thể đọc CCCD");
-    setFile(null);
-    setPreviewUrl("");
-    setCccdInfo(null);
+    } catch (err) {
 
-  } finally {
+      console.error(err);
+      alert("Không thể đọc CCCD");
+      setFile(null);
+      setPreviewUrl("");
+      setCccdInfo(null);
 
-    setIsConverting(false);
+    } finally {
 
-  }
+      setIsConverting(false);
+
+    }
 
   };
 
@@ -90,17 +94,17 @@ export default function RegisterCCCD() {
 
       if (!cccdInfo) return;
 
-        const user = {
-          name: cccdInfo.hoTen,
-          avatar: imageUrl,
-          verified: true,
-          verifiedAt: new Date().toISOString()
-        };
+      const user = {
+        name: cccdInfo.hoTen,
+        avatar: imageUrl,
+        verified: true,
+        verifiedAt: new Date().toISOString()
+      };
 
-      localStorage.setItem("craft_user", JSON.stringify(user));
+      // localStorage.setItem("craft_user", JSON.stringify(user));
 
       // bắn event để Home update ngay (khỏi refresh)
-      window.dispatchEvent(new Event("craft_user_updated"));
+      // window.dispatchEvent(new Event("craft_user_updated"));
 
       console.log("Ảnh CCCD đã upload:", imageUrl);
       

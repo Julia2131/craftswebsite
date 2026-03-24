@@ -60,14 +60,18 @@ export default function Profile() {
   };
 
   const logout = () => {
-    // 1. Xóa user
+    // 1. Xoá thông tin user + token
     localStorage.removeItem("craft_user");
+    localStorage.removeItem("token");
 
-    // 2. Trigger update cho các component (Header sẽ cập nhật ngay)
+    // nếu có thêm thì xoá luôn
+    localStorage.removeItem("register_seller_id");
+
+    // 2. Bắn event để Header cập nhật ngay
     window.dispatchEvent(new Event("craft_user_updated"));
 
-    // 3. Điều hướng
-    navigate("/");
+    // 3. (optional) chuyển trang
+    navigate("/"); // hoặc "/log"
   };
 
   return (
@@ -137,8 +141,7 @@ export default function Profile() {
                   ))}
                 </div>
               </div>
-
-              <div className="pl-[124px] pt-4">
+              <div className="pl-[50px] pt-4 flex gap-4">
                 <button 
                   onClick={handleSave} 
                   className="bg-blue-600 text-white px-12 py-2.5 rounded-md hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all font-medium"
@@ -149,7 +152,7 @@ export default function Profile() {
                   onClick={logout} 
                   className="bg-blue-300 text-white px-12 py-2.5 rounded-md hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-95 transition-all font-medium"
                 >
-                  Đăng xuất
+                  Đăng xuất 
                 </button>
               </div>
             </div>

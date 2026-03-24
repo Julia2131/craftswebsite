@@ -35,7 +35,6 @@ export default function App() {
         <Route path="/address" element={<UserLayout><Address /></UserLayout>} />
         <Route path="/orders" element={<UserLayout><OrderList /></UserLayout>} />
         <Route path="/favorites" element={<UserLayout><FavoriteSellers /></UserLayout>} />
-
         <Route path="/seller" element={<SellerLayout />}> {/* Role SELLER */}
           <Route path="home" element={<Dashboard />} />
           <Route path="product/success" element={<ProductCreateSuccess />} />

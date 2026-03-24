@@ -21,6 +21,7 @@ export default function Log() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify({
           username: username,
@@ -37,7 +38,10 @@ export default function Log() {
           loginAt: new Date().toISOString(),
         };
 
-        localStorage.setItem("craft_user", JSON.stringify(user));
+        // localStorage.setItem("craft_user", JSON.stringify(user));
+
+        // lưu token 
+        localStorage.setItem("token", data.token);
 
         // lưu roles
         localStorage.setItem("roles", JSON.stringify(data.roles));

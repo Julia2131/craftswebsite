@@ -64,11 +64,15 @@ export default function SellerProducts() {
         try {
             const res = await fetch(
             `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
-            );
+            , {
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+            });
 
-            console.log(
-            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
-            );
+            // console.log(
+            // `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
+            // );
 
             if (!res.ok) {
                 console.error("API error", res.status);
@@ -96,6 +100,9 @@ export default function SellerProducts() {
 
         const res = await fetch(`${API}/san-pham-co-san/${id}/delete`, {
             method: "PUT",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
         });
 
         if (!res.ok) {

@@ -7,20 +7,44 @@ import searchIcon from "../assets/Icon.png";
 export default function Header() {
   const navigate = useNavigate();
   
-  // 1. Quản lý trạng thái user (Lấy từ localStorage)
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("craft_user")) || null;
-    } catch {
-      return null;
-    }
-  });
+  const [image, setImage] = useState("");
+  const [name, setname] = useState("");
+  
+  const token = localStorage.getItem("token");
+
+  const API = import.meta.env.VITE_API_URL;
 
   // 2. Lắng nghe sự kiện đăng nhập/đăng xuất để cập nhật Header ngay lập tức
   useEffect(() => {
-    const handleSync = () => {
-      setUser(JSON.parse(localStorage.getItem("craft_user")) || null);
+    const handleSync = async () => {
+
+      if (!token) {
+        setUser(null);
+        setImage("");
+        setname("");
+        return;
+      }
+
+      const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (!res.ok) {
+        console.error("API lỗi:", res.status);
+        return;
+      }
+
+      const data = await res.json();
+      setImage(data.anhChanDungUrl);
+      localStorage.setItem("anhChanDungUrl", data.anhChanDungUrl);
+      setname(localStorage.getItem("tenDangNhap"));
+
     };
+
+    handleSync();
+
     window.addEventListener("craft_user_updated", handleSync);
     window.addEventListener("storage", handleSync); // Đồng bộ giữa các tab
     return () => {
@@ -29,21 +53,20 @@ export default function Header() {
     };
   }, []);
 
-  const API = import.meta.env.VITE_API_URL;
   // click "Kênh người bán"
   const handleOpenSeller = async () => {
-
-    const userId = localStorage.getItem("register_user_id");
-
-    if (!userId) {
+    if (!token) {
       alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
       navigate("/log");
       return;
     }
 
     try {
-
-      const res = await fetch(`${API}/thong-tin-nguoi-ban/by-user/${userId}`);
+      const res = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
 
       // chưa có seller
       if (res.status === 404) {
@@ -76,9 +99,9 @@ export default function Header() {
       <div className="bg-[#f3f3f3] border-b border-gray-200">
         <div className="mx-auto max-w-6xl px-4 py-1 flex justify-between text-[11px] text-gray-500 font-medium">
           <div className="flex gap-4">
-            <span 
+            <span
               onClick={handleOpenSeller}
-              className="cursor-pointer hover:text-blue-600 transition-colors"
+              className="cursor-pointer hover:text-blue-600 transition-colors"            
               >Kênh người bán
             </span>
             <span className="text-gray-300">|</span>
@@ -122,47 +145,23 @@ export default function Header() {
           </button>
 
           {/* SỬA LỖI 1: Kiểm tra user để hiện "Đăng nhập" hoặc "Thông tin cá nhân" */}
-          {user ? (
+          {token ? (
             <div 
               className="flex items-center gap-2 border-l pl-5 cursor-pointer hover:opacity-80 transition-all"
               onClick={() => navigate("/profile")}
             >
-            <div className="flex items-center gap-2">
-              <div 
-                onClick={() => navigate("/profile")}
-                className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100 cursor-pointer"
-              >
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt="avatar"
-                    className="h-full w-full object-cover"
-                  />
+              <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 border border-gray-100">
+                {image ? (
+                  <img src={image} className="h-full w-full object-cover" alt="avatar" />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center text-sm text-slate-500">
-                    U
+                  <div className="h-full w-full flex items-center justify-center text-gray-400">
+                    <User size={18} />
                   </div>
                 )}
               </div>
-
-              <div className="leading-tight">
-                <div className="text-sm font-medium text-slate-800">
-                  {user.name || "Người dùng"}
-                </div>
-                <div className="text-[11px] text-slate-500 flex items-center gap-2">
-                  <span
-                    className={[
-                      "inline-flex items-center rounded-full px-2 py-[2px]",
-                      user.verified
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-amber-50 text-amber-700 border border-amber-200",
-                    ].join(" ")}
-                  >
-                    {user.verified ? "Đã xác thực eKYC" : "Chưa xác thực"}
-                  </span>
-                </div>
-              </div>
-            </div>
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                {name || "Người dùng"}
+              </span>
             </div>
           ) : (
             /* Nếu chưa đăng nhập thì hiện nút Đăng nhập */

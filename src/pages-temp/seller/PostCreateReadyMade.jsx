@@ -100,7 +100,11 @@ export const PostCreateReadyMade = () => {
 
     const fetchProduct = async () => {
 
-      const res = await fetch(`${API}/san-pham-co-san/${id}`);
+      const res = await fetch(`${API}/san-pham-co-san/${id}`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
+      });
       const data = await res.json();
 
       console.log("DATA", data);
@@ -272,7 +276,11 @@ export const PostCreateReadyMade = () => {
   };
 
   useEffect(() => {
-    fetch(`${API}/danh-muc`)
+    fetch(`${API}/danh-muc`, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    })
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error(err));
@@ -309,6 +317,7 @@ export const PostCreateReadyMade = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify(payload),
       });
@@ -352,7 +361,8 @@ export const PostCreateReadyMade = () => {
     await fetch(`${API}/san-pham-co-san/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify(payload)
     });
