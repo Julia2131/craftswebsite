@@ -61,11 +61,11 @@ export default function Profile() {
 
   const logout = () => {
     // 1. Xoá thông tin user + token
-    localStorage.removeItem("craft_user");
+    localStorage.removeItem("_grecaptcha");
     localStorage.removeItem("token");
-
-    // nếu có thêm thì xoá luôn
-    localStorage.removeItem("register_seller_id");
+    localStorage.removeItem("anhChanDungUrl");
+    localStorage.removeItem("tenDangNhap");
+    localStorage.removeItem("trangThaiXacThuc");
 
     // 2. Bắn event để Header cập nhật ngay
     window.dispatchEvent(new Event("craft_user_updated"));
