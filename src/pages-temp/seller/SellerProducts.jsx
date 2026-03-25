@@ -50,42 +50,45 @@ export default function SellerProducts() {
 
     }, [page, activeTab, sort, search]);
 
-    const sellerid = localStorage.getItem("register_seller_id");
-    if (!sellerid) {
-      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
-      navigate("/log");
-      return;
-    }
+    const token = localStorage.getItem("token");
+
+    useEffect(() => {
+        if (!token) {
+        alert("Vui lòng đăng nhập trước khi tạo sản phẩm");
+        navigate("/log");
+        }
+    }, []);
+
     const API = import.meta.env.VITE_API_URL;
 
     const fetchProducts = async () => {
-        const status = statusMap[activeTab];
+    const status = statusMap[activeTab];
 
-        try {
-            const res = await fetch(
-            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
-            );
-
-            console.log(
-            `${API}/san-pham-co-san?sellerId=${sellerid}&status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`
-            );
-
-            if (!res.ok) {
-                console.error("API error", res.status);
-                setProducts([]);
-                return;
+    try {
+        const res = await fetch(
+        `${API}/san-pham-co-san?status=${status}&search=${search}&page=${page-1}&size=10&sort=gia,${sort}`,
+        {
+            headers: {
+            "Authorization": `Bearer ${token}`
             }
-
-            const data = await res.json();
-            console.log(data.content);
-
-            setProducts(data.content || []);
-            setTotalPages(data.totalPages || 1);
-
-        } catch (err) {
-            console.error(err);
-            setProducts([]);
         }
+        );
+
+        if (!res.ok) {
+            console.error("API error", res.status);
+            setProducts([]);
+            return;
+        }
+
+        const data = await res.json();
+
+        setProducts(data.content || []);
+        setTotalPages(data.totalPages || 1);
+
+    } catch (err) {
+        console.error(err);
+        setProducts([]);
+    }
     };
 
     const handleEdit = (id) => {
@@ -94,17 +97,33 @@ export default function SellerProducts() {
 
     const handleDelete = async (id) => {
 
+    const confirmDelete = window.confirm("Bạn có chắc muốn xóa sản phẩm?");
+    if (!confirmDelete) return;
+
+    try {
         const res = await fetch(`${API}/san-pham-co-san/${id}/delete`, {
-            method: "PUT",
+        method: "PUT",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
         });
 
+        const data = await res.json().catch(() => null);
+
         if (!res.ok) {
-            alert("Xóa sản phẩm thất bại");
-            return;
+        alert(data?.error || "Xóa sản phẩm thất bại");
+        return;
         }
 
         alert("Đã xóa sản phẩm");
-        window.location.reload();
+
+        // ✅ Cách tốt hơn reload
+        setProducts(prev => prev.filter(p => p.id !== id));
+
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi mạng hoặc server");
+    }
     };
 
   return (

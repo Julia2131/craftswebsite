@@ -73,37 +73,52 @@ export const PostCreateReadyMade = () => {
 
   useEffect(() => {
 
-      if (!id) {
+    if (!id) {
 
-        // reset toàn bộ form khi tạo mới
-        setForm({
-          description: "",
-          price: "",
-          giaGoc: "",
-          weight: "",
-          quantity: "",
-          soGioLamViecUocTinh: "",
-          categoryId: "",
-          size: {
-            length: "",
-            width: "",
-            height: "",
-          }
-        });
+      // reset toàn bộ form khi tạo mới
+      setForm({
+        description: "",
+        price: "",
+        giaGoc: "",
+        weight: "",
+        quantity: "",
+        soGioLamViecUocTinh: "",
+        categoryId: "",
+        size: {
+          length: "",
+          width: "",
+          height: "",
+        }
+      });
 
-        setImages([]);
-        setVideos([]);
-        setCover(null);
+      setImages([]);
+      setVideos([]);
+      setCover(null);
 
-        return;
-      }
+      return;
+    }
 
     const fetchProduct = async () => {
 
-      const res = await fetch(`${API}/san-pham-co-san/${id}`);
+      const res = await fetch(`${API}/san-pham-co-san/${id}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        if (res.status === 403) {
+          alert("Bạn không có quyền xem sản phẩm này");
+        } else if (res.status === 401) {
+          navigate("/log");
+        } else {
+          alert("Lỗi tải sản phẩm");
+        }
+        return;
+      }
       const data = await res.json();
 
-      console.log("DATA", data);
+      // console.log("DATA", data);
 
       setForm({
         description: data.moTa || "",
@@ -231,10 +246,10 @@ export const PostCreateReadyMade = () => {
     setActiveSection(current);
   };
 
-  const sellerid = localStorage.getItem("register_seller_id");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!sellerid) {
+    if (!token) {
       alert("Vui lòng đăng nhập trước khi tạo sản phẩm");
       navigate("/log");
     }
@@ -259,7 +274,6 @@ export const PostCreateReadyMade = () => {
 
       trangThaiSPCS: "LUU_AN",
 
-      sellerId: sellerid,
       danhMucId: Number(form.categoryId),
 
       trangThaiSanPham: "NHAP",
@@ -285,7 +299,79 @@ export const PostCreateReadyMade = () => {
     return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const validateAll = () => {
+    let isValid = true;
+    let newErrors = {
+      quantity: "",
+      price: "",
+      weight: "",
+      description: "",
+      size: {
+        length: "",
+        width: "",
+        height: "",
+      },
+    };
+
+    // PRICE
+    if (!form.price) {
+      newErrors.price = "Giá không được để trống";
+      isValid = false;
+    } else if (Number(form.price) <= 0) {
+      newErrors.price = "Giá phải > 0";
+      isValid = false;
+    }
+
+    // QUANTITY
+    if (!form.quantity) {
+      newErrors.quantity = "Số lượng không được để trống";
+      isValid = false;
+    } else if (Number(form.quantity) <= 0) {
+      newErrors.quantity = "Số lượng phải > 0";
+      isValid = false;
+    }
+
+    // WEIGHT
+    if (!form.weight) {
+      newErrors.weight = "Cân nặng không được để trống";
+      isValid = false;
+    } else if (Number(form.weight) <= 0) {
+      newErrors.weight = "Cân nặng phải > 0";
+      isValid = false;
+    }
+
+    // DESCRIPTION
+    if (!form.description || form.description.trim().length < 10) {
+      newErrors.description = "Mô tả ít nhất 10 ký tự";
+      isValid = false;
+    }
+
+    // SIZE
+    if (Number(form.size.length) <= 0) {
+      newErrors.size.length = "Chiều dài phải > 0";
+      isValid = false;
+    }
+
+    if (Number(form.size.width) <= 0) {
+      newErrors.size.width = "Chiều rộng phải > 0";
+      isValid = false;
+    }
+
+    if (Number(form.size.height) <= 0) {
+      newErrors.size.height = "Chiều cao phải > 0";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const createProduct = async (trangThai) => {
+
+    if (!validateAll()) {
+      alert("Vui lòng nhập đúng thông tin");
+      return;
+    }
 
     try {
 
@@ -309,6 +395,7 @@ export const PostCreateReadyMade = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(payload),
       });
@@ -335,6 +422,11 @@ export const PostCreateReadyMade = () => {
 
   const updateProduct = async (trangThai) => {
 
+    if (!validateAll()) {
+      alert("Vui lòng nhập đúng thông tin");
+      return;
+    }
+
     setLoading(true);
 
     const mediaLinks = await uploadMedia();
@@ -352,7 +444,8 @@ export const PostCreateReadyMade = () => {
     await fetch(`${API}/san-pham-co-san/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(payload)
     });
@@ -427,8 +520,6 @@ export const PostCreateReadyMade = () => {
                     setForm={setForm}
                     errors={errors}
                     setErrors={setErrors}
-                    validateField={() => {}}
-                    validateSize={() => {}}
                     categories={categories}
                     setImages={setImages}
                     setCover={setCover}
@@ -489,8 +580,6 @@ const SectionBlock = ({
   setForm,
   errors,
   setErrors,
-  validateField,
-  validateSize,
   categories,
   setImages,
   setCover,
@@ -547,7 +636,7 @@ const SectionBlock = ({
               const value = e.target.value;
 
               setForm({ ...form, quantity: value });
-              validateField("quantity", value);
+              // validateField("quantity", value);
             }}
           />
         </div>
@@ -568,7 +657,7 @@ const SectionBlock = ({
               const value = e.target.value;
 
               setForm({ ...form, price: value });
-              validateField("price", value);
+              // validateField("price", value);
             }}
           />
         </div>
@@ -589,7 +678,7 @@ const SectionBlock = ({
               const value = e.target.value;
 
               setForm({ ...form, weight: value });
-              validateField("weight", value);
+              // validateField("weight", value);
             }}
           />
         </div>
@@ -603,7 +692,7 @@ const SectionBlock = ({
               setForm({ ...form, size: v })
             }
             errors={errors.size}
-            validateSize={validateSize}
+            // validateSize={validateSize}
           />
         </div>
       )}
@@ -670,7 +759,7 @@ const SectionBlock = ({
           onChange={(e) => {
             const value = e.target.value;
             setForm({ ...form, description: value });
-            validateField("description", value);
+            // validateField("description", value);
           }}
           />
           </div>

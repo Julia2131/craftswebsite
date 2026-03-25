@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 export default function VerifyOTP() {
   const [otp, setOtp] = useState("");
@@ -41,28 +42,43 @@ export default function VerifyOTP() {
 
     try {
       setLoading(true);
-
+      
       const result = await window.confirmationResult.confirm(otp);
 
-      console.log("User:", result.user);
-
-      // gọi API backend
       const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ sdt: phone })
+        body: JSON.stringify({
+          sdt: phone
+        })
       });
 
       const data = await res.json();
 
-      localStorage.setItem("register_user_id", data.id);
+      // const confirmationResult = await signInWithPhoneNumber(
+      //   auth,
+      //   phoneFormat,
+      //   appVerifier
+      // );
 
-      navigate("/register-cccd");
+      if (!data.success) {
+        alert(data.message);
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+
+      navigate("/register-cccd", { state: { phone } });
 
     } catch (err) {
-      setError("OTP sai hoặc đã hết hạn");
+      console.error(err);
+      setError("Không gửi được OTP, thử lại sau");
+
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
     } finally {
       setLoading(false);
     }

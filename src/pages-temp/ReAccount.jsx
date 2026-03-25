@@ -20,6 +20,7 @@ export default function ResetAccount() {
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
   const API = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
   
   const XIcon = () => (
     <svg
@@ -39,7 +40,11 @@ export default function ResetAccount() {
   );
 
   useEffect(() => {
-    fetch(`${API}/nguoi-dung/ten-dang-nhap`)
+    fetch(`${API}/nguoi-dung/ten-dang-nhap`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
       .then((res) => res.json())
       .then((data) => {
         setUsernameList(data);
@@ -56,15 +61,15 @@ export default function ResetAccount() {
   const handleSubmit = async () => {
     if (!valid) return;
 
-    const userId = localStorage.getItem("register_user_id");
+    const userId = localStorage.getItem("token");
 
     const res = await fetch(`${API}/nguoi-dung/set-password`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       },
       body: JSON.stringify({
-        userId: userId,
         password: password,
         tenDangNhap: name
       })
@@ -72,11 +77,8 @@ export default function ResetAccount() {
 
     const data = await res.json();
 
-    // xóa register session
-    // localStorage.removeItem("register_user_id");
-
-    // login local
-    localStorage.setItem("craft_user", JSON.stringify(data));
+    localStorage.setItem("tenDangNhap", data.tenDangNhap);
+    localStorage.setItem("trangThaiXacThuc", data.trangThaiXacThuc);
 
     navigate("/");
   };

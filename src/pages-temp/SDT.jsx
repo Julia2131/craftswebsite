@@ -29,28 +29,6 @@ export default function SDT() {
     </svg>
   );
 
-  // const handleRegister = async () => {
-  //   if (!canSubmit) return;
-
-  //   const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json"
-  //     },
-  //     body: JSON.stringify({
-  //       sdt: phone
-  //     })
-  //   });
-
-  //   const data = await res.json();
-
-  //   // lưu id user
-  //   localStorage.setItem("register_user_id", data.id);
-
-  //   navigate("/register-cccd");
-
-  // };
-
   const handleRegister = async () => {
     if (!canSubmit) return;
 
@@ -99,7 +77,7 @@ export default function SDT() {
   useEffect(() => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(
-        auth, // ⚠️ phải là tham số đầu tiên
+        auth, // GOI BEN FIREBASE.JS
         "recaptcha-container",
         {
           size: "invisible"
@@ -119,7 +97,7 @@ export default function SDT() {
           <h1 className="text-3xl font-semibold">Đăng ký</h1>
 
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/log")}
             className="text-blue-600 font-medium hover:underline"
           >
             Đăng nhập

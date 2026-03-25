@@ -37,10 +37,8 @@ export default function Log() {
           loginAt: new Date().toISOString(),
         };
 
-        localStorage.setItem("craft_user", JSON.stringify(user));
-
-        // lưu roles
-        localStorage.setItem("roles", JSON.stringify(data.roles));
+        // lưu token 
+        localStorage.setItem("token", data.token);
 
         window.dispatchEvent(new Event("craft_user_updated"));
 
