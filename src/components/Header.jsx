@@ -19,12 +19,11 @@ export default function Header() {
     const handleSync = async () => {
 
       if (!token) {
-        // setUser(null);
         setImage("");
         setname("");
         return;
       }
-
+      // Lay anh 
       const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
         headers: {
           "Authorization": "Bearer " + token
@@ -39,7 +38,22 @@ export default function Header() {
       const data = await res.json();
       setImage(data.anhChanDungUrl);
       localStorage.setItem("anhChanDungUrl", data.anhChanDungUrl);
-      setname(localStorage.getItem("tenDangNhap"));
+
+      // Lay ten 
+      const res1 = await fetch(`${API}/nguoi-dung/me/ten`, {
+        headers: {
+          "Authorization": "Bearer " + token
+        }
+      });
+
+      if (!res1.ok) {
+        console.error("API lỗi:", res.status);
+        return;
+      }
+
+      const data1 = await res1.json();
+      setname(data1.ten);
+      localStorage.setItem("tenDangNhap", data1.ten);
 
     };
 
