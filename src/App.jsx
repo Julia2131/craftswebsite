@@ -22,6 +22,7 @@ import UserLayout from "./layouts/UserLayout.jsx";
 import Address from "./pages-temp/Address.jsx"
 import OrderList from "./pages-temp/OrderList.jsx";
 import FavoriteSellers from "./pages-temp/FavoriteSellers.jsx";
+import SearchPage from "./pages-temp/SearchPage.jsx";
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/address" element={<UserLayout><Address /></UserLayout>} />
         <Route path="/orders" element={<UserLayout><OrderList /></UserLayout>} />
         <Route path="/favorites" element={<UserLayout><FavoriteSellers /></UserLayout>} />
+        <Route path="/search" element={<UserLayout><SearchPage /></UserLayout>}/>
         <Route path="/seller" element={<SellerLayout />}> {/* Role SELLER */}
           <Route path="home" element={<Dashboard />} />
           <Route path="product/success" element={<ProductCreateSuccess />} />
