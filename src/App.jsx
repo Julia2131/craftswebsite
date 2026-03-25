@@ -9,8 +9,10 @@ import SwitchToSeller from "./pages-temp/SwitchToSeller.jsx";
 import Dashboard from "./pages-temp/seller/Dashboard.jsx";
 import SellerLayout from "./layouts/SellerLayout.jsx";
 import { PostCreateReadyMade } from "./pages-temp/seller/PostCreateReadyMade.jsx";
+// import PostCreateReadyMade from "./pages-temp/seller/PostCreateReadyMade.jsx";
 import ProductCreateSuccess from "./pages-temp/seller/ProductCreateSuccess.jsx";
 import SellerProducts from "./pages-temp/seller/SellerProducts.jsx";
+import VerifyOTP from "./pages-temp/VerifyOTP.jsx";
 import SuperDashboard from "./pages-temp/Admin/Dashboard.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import ContentModeration from "./pages-temp/Admin/ContentModeration.jsx";
@@ -31,6 +33,7 @@ export default function App() {
         <Route path="/sdt" element={<SDT />} />
         <Route path="/reset-account" element={<ResetAccount />} />
         <Route path="/switch-to-seller" element={<SwitchToSeller />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/profile" element={<UserLayout><Profile /></UserLayout>} />
         <Route path="/address" element={<UserLayout><Address /></UserLayout>} />
         <Route path="/orders" element={<UserLayout><OrderList /></UserLayout>} />

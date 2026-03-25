@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "../services/firebase";
 
 export default function SDT() {
   const navigate = useNavigate();
@@ -30,27 +31,30 @@ export default function SDT() {
 
   const handleRegister = async () => {
     if (!canSubmit) return;
-    const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        sdt: phone
-      })
-    });
 
-    const data = await res.json();
+    try {
+      const appVerifier = window.recaptchaVerifier;
 
-    if (!data.success) {
-      alert(data.message);
-      return;
+      const phoneFormat = phone.replace(/^0/, "+84");
+
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        phoneFormat,
+        appVerifier
+      );
+
+      window.confirmationResult = confirmationResult;  // Mã phiên, Gửi cùng OTP  
+
+      navigate("/verify-otp", { state: { phone } });
+
+    } catch (err) {
+      console.error(err);
+      setError("Không gửi được OTP, thử lại sau");
+
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
     }
-
-    localStorage.setItem("token", data.token);
-
-    navigate("/register-cccd");
-
   };
 
   const handlePhoneChange = (e) => {
@@ -69,6 +73,20 @@ export default function SDT() {
       setError("");
     }
   };
+
+  useEffect(() => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth, // GOI BEN FIREBASE.JS
+        "recaptcha-container",
+        {
+          size: "invisible"
+        }
+      );
+
+      window.recaptchaVerifier.render();
+    }
+  }, []);
   
   return (
     <div className="min-h-screen bg-[#f3f5f7] flex items-center justify-center p-6">
@@ -141,6 +159,8 @@ export default function SDT() {
         >
           Đăng ký
         </button>
+
+        <div id="recaptcha-container"></div>
 
       </div>
     </div>

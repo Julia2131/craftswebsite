@@ -19,7 +19,7 @@ export default function Header() {
     const handleSync = async () => {
 
       if (!token) {
-        setUser(null);
+        // setUser(null);
         setImage("");
         setname("");
         return;
@@ -79,12 +79,6 @@ export default function Header() {
         console.error("Server error:", res.status);
         return;
       }
-
-      const sellerId = await res.json();
-
-      console.log("sellerId:", sellerId);
-
-      localStorage.setItem("register_seller_id", sellerId);
 
       navigate("/seller/home");
 

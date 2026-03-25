@@ -4,6 +4,7 @@ export default function Dashboard() {
 
   const [productCount, setProductCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const API = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
 
@@ -11,19 +12,25 @@ export default function Dashboard() {
 
       try {
 
-        const ttnbId = localStorage.getItem("register_seller_id");
+        const token = localStorage.getItem("token");
 
-        if (!ttnbId) return;
-
-        const API = import.meta.env.VITE_API_URL;
+        if (!token) {
+          alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
+          navigate("/log");
+          return;
+        }
 
         const res = await fetch(
-          `${API}/san-pham/${ttnbId}/dang-ban/count`
+          `${API}/san-pham/dang-ban/count`
         , {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
         });
+
+        if (!res.ok) {
+          throw new Error("Lỗi lấy số lượng");
+        }
 
         const data = await res.json();
 

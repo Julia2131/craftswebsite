@@ -20,6 +20,7 @@ export default function ResetAccount() {
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
   const API = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
   
   const XIcon = () => (
     <svg
@@ -41,7 +42,7 @@ export default function ResetAccount() {
   useEffect(() => {
     fetch(`${API}/nguoi-dung/ten-dang-nhap`, {
       headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
+        "Authorization": `Bearer ${token}`
       }
     })
       .then((res) => res.json())
