@@ -23,6 +23,10 @@ import Address from "./pages-temp/Address.jsx"
 import OrderList from "./pages-temp/OrderList.jsx";
 import FavoriteSellers from "./pages-temp/FavoriteSellers.jsx";
 import SearchPage from "./pages-temp/SearchPage.jsx";
+import CartPage from "./pages-temp/CartPage.jsx";
+import CreateOrder from "./pages-temp/CreateOrder.jsx"; 
+import PaymentPage from "./pages-temp/PaymentPage.jsx";
+
 
 export default function App() {
   return (
@@ -40,6 +44,10 @@ export default function App() {
         <Route path="/orders" element={<UserLayout><OrderList /></UserLayout>} />
         <Route path="/favorites" element={<UserLayout><FavoriteSellers /></UserLayout>} />
         <Route path="/search" element={<UserLayout><SearchPage /></UserLayout>}/>
+        <Route path="/cart-page" element={<UserLayout><CartPage /></UserLayout>}/>
+        <Route path="/create-order" element={<UserLayout><CreateOrder /></UserLayout>} />
+        <Route path="/payment-page" element={<UserLayout><PaymentPage /></UserLayout>} />
+        
         <Route path="/seller" element={<SellerLayout />}> {/* Role SELLER */}
           <Route path="home" element={<Dashboard />} />
           <Route path="product/success" element={<ProductCreateSuccess />} />

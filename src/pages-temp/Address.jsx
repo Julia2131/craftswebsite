@@ -8,9 +8,9 @@ export default function Address() {
   const STORAGE_KEY = "craft_user";
   const ADDR_KEY = "user_addresses";
 
-  const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false);  {/* Thêm địa chỉ mới */}
   const [addresses, setAddresses] = useState(() => {
-    const saved = localStorage.getItem(ADDR_KEY);
+  const saved = localStorage.getItem(ADDR_KEY);
     return saved ? JSON.parse(saved) : [
       { id: 1, name: "TRẦN THỊ HƯƠNG", phone: "0988 123 234", address: "Số 1, Ngõ 10, Phố Chùa Láng, Phường Láng Thượng, Quận Đống Đa, Hà Nội", default: true },
     ];
@@ -33,6 +33,18 @@ export default function Address() {
     setShowModal(false);
     setNewAddr({ name: "", phone: "", detail: "", isDefault: false });
   };
+
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWard, setSelectedWard] = useState("");
+
+  const districts = selectedProvince
+    ? ADDRESS_DATA.find(p => p.name === selectedProvince)?.districts || []
+    : [];
+  const wards = selectedDistrict
+    ? districts.find(d => d.name === selectedDistrict)?.wards || []
+    : [];
+
 
   return (
     // XÓA THẺ <Layout> Ở ĐÂY
@@ -74,7 +86,7 @@ export default function Address() {
         </div>
       </div>
 
-      {/* MODAL POPUP - Giữ nguyên logic đóng mở */}
+      {/* Thêm địa chỉ mới */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-xl rounded-lg shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -86,6 +98,7 @@ export default function Address() {
             </div>
 
             <div className="p-6 space-y-4">
+              {/* Họ tên & SDT */}
               <div className="grid grid-cols-2 gap-4">
                 <input 
                   type="text" placeholder="Họ và tên" 
@@ -98,15 +111,68 @@ export default function Address() {
                   onChange={(e) => setNewAddr({...newAddr, phone: e.target.value})}
                 />
               </div>
-              
-              <div className="relative">
-                <input 
-                  type="text" placeholder="Tỉnh/Thành phố, Quận/Huyện, Phường/Xã" 
-                  className="w-full border rounded px-4 py-3 pr-10 outline-none focus:border-blue-500 text-sm"
-                />
-                <MapPin className="absolute right-3 top-3.5 text-gray-300" size={18} />
+
+              {/* Chọn Tỉnh/Quận/Phường */}
+              <div className="space-y-2 relative">
+                <div className="flex items-center gap-2">
+                  <MapPin className="text-gray-300" size={18} />
+                  <span className="text-sm text-gray-500">Chọn địa chỉ</span>
+                </div>
+
+                {/* Tỉnh/Thành phố */}
+                <select
+                  className="w-full border rounded px-4 py-3 outline-none focus:border-blue-500 text-sm"
+                  value={selectedProvince}
+                  onChange={(e) => {
+                    setSelectedProvince(e.target.value);
+                    setSelectedDistrict("");
+                    setSelectedWard("");
+                    setNewAddr({...newAddr, province: e.target.value, district: "", ward: ""});
+                  }}
+                >
+                  <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                  {ADDRESS_DATA.map(p => (
+                    <option key={p.name} value={p.name}>{p.name}</option>
+                  ))}
+                </select>
+
+                {/* Quận/Huyện */}
+                {districts.length > 0 && (
+                  <select
+                    className="w-full border rounded px-4 py-3 outline-none focus:border-blue-500 text-sm mt-1 max-h-40 overflow-y-auto"
+                    value={selectedDistrict}
+                    onChange={(e) => {
+                      setSelectedDistrict(e.target.value);
+                      setSelectedWard("");
+                      setNewAddr({...newAddr, district: e.target.value, ward: ""});
+                    }}
+                  >
+                    <option value="">-- Chọn Quận/Huyện --</option>
+                    {districts.map(d => (
+                      <option key={d.name} value={d.name}>{d.name}</option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Phường/Xã */}
+                {wards.length > 0 && (
+                  <select
+                    className="w-full border rounded px-4 py-3 outline-none focus:border-blue-500 text-sm mt-1 max-h-40 overflow-y-auto"
+                    value={selectedWard}
+                    onChange={(e) => {
+                      setSelectedWard(e.target.value);
+                      setNewAddr({...newAddr, ward: e.target.value});
+                    }}
+                  >
+                    <option value="">-- Chọn Phường/Xã --</option>
+                    {wards.map(w => (
+                      <option key={w} value={w}>{w}</option>
+                    ))}
+                  </select>
+                )}
               </div>
 
+              {/* Địa chỉ cụ thể */}
               <textarea 
                 placeholder="Địa chỉ cụ thể" 
                 rows="3"
@@ -114,6 +180,7 @@ export default function Address() {
                 onChange={(e) => setNewAddr({...newAddr, detail: e.target.value})}
               ></textarea>
 
+              {/* Checkbox mặc định */}
               <label className="flex items-center gap-2 cursor-pointer py-2">
                 <input 
                   type="checkbox" 
@@ -124,6 +191,7 @@ export default function Address() {
                 <span className="text-sm text-gray-500 italic">Đặt làm địa chỉ mặc định</span>
               </label>
             </div>
+  
 
             <div className="p-6 border-t flex justify-end gap-3 bg-gray-50 rounded-b-lg">
               <button 
@@ -145,3 +213,45 @@ export default function Address() {
     </section>
   );
 }
+
+const ADDRESS_DATA = [
+  {
+    name: "Hà Nội",
+    districts: [
+      {
+        name: "Hoàn Kiếm",
+        wards: ["Phúc Tân", "Hàng Bạc", "Hàng Bông"]
+      },
+      {
+        name: "Ba Đình",
+        wards: ["Phúc Xá", "Trúc Bạch", "Ngọc Hà"]
+      },
+    ]
+  },
+  {
+    name: "TP. Hồ Chí Minh",
+    districts: [
+      {
+        name: "Quận 1",
+        wards: ["Bến Nghé", "Bến Thành", "Cầu Kho"]
+      },
+      {
+        name: "Quận 3",
+        wards: ["Phường 1", "Phường 2", "Phường 3"]
+      },
+    ]
+  },
+  {
+    name: "Đà Nẵng",
+    districts: [
+      {
+        name: "Hải Châu",
+        wards: ["Thạch Thang", "Hải Châu I", "Hải Châu II"]
+      },
+      {
+        name: "Sơn Trà",
+        wards: ["An Hải Bắc", "An Hải Đông", "Thọ Quang"]
+      },
+    ]
+  }
+];

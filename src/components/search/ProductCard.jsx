@@ -128,20 +128,52 @@ export default function ProductCard({ data }) {
       </div> */}
 
       {/* Loi video */}
-      {/* <div className="relative h-[400px]">
-        {media.slice(0, 5).map((m, i) => (
-          <img
-            key={i}
-            src={m.url}
-            onClick={() => setPreviewIndex(i)}
-            className="absolute w-[220px] h-[220px] object-cover rounded-md shadow-lg cursor-pointer transition hover:scale-105"
-            style={{
-              top: `${i * 30}px`,
-              left: `${i * 40}px`,
-              transform: `rotate(${(i - 2) * 5}deg)`
-            }}
-          />
-        ))}
+      {/* <div className="relative h-[350px]">
+        {media.slice(0, 4).map((m, i) => {
+          const style = {
+            width: "260px",
+            height: "200px",
+            top: `${i * 60}px`,
+            left: `${i % 2 === 0 ? "-40px" : "200px"}`,
+            zIndex: 10 - i
+          };
+
+          const commonClass =
+            "absolute object-cover rounded-md cursor-pointer shadow-md";
+
+          return (
+            <div key={i} style={style} className="absolute">
+              {m.type === "image" && (
+                <img
+                  src={m.url}
+                  onClick={() => setPreviewIndex(i)}
+                  className={commonClass + " w-full h-full"}
+                />
+              )}
+
+              {m.type === "video" && (
+                <div className="relative w-full h-full">
+                  <video
+                    src={m.url}
+                    className={commonClass + " w-full h-full"}
+                    muted
+                    loop
+                    playsInline
+                    onClick={() => setPreviewIndex(i)}
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => e.currentTarget.pause()}
+                  />
+
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="bg-black/50 text-white px-2 py-1 rounded text-xs">
+                      ▶
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div> */}
 
       {/* Loi video, Tran ah ra ngoai */}
@@ -246,7 +278,6 @@ export default function ProductCard({ data }) {
                 e.currentTarget.style.zIndex = media.length - i;
               }}
             >
-              {/* IMAGE */}
               {m.type === "image" && (
                 <img
                   src={m.url}
@@ -255,7 +286,6 @@ export default function ProductCard({ data }) {
                 />
               )}
 
-              {/* VIDEO */}
               {m.type === "video" && (
                 <video
                   src={m.url}
@@ -268,7 +298,6 @@ export default function ProductCard({ data }) {
                 />
               )}
 
-              {/* ICON VIDEO */}
               {m.type === "video" && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="bg-black/50 text-white px-2 py-1 rounded text-xs">

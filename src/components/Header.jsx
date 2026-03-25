@@ -169,7 +169,7 @@ export default function Header() {
           {/* SỬA LỖI 2: Bấm icon giỏ hàng chuyển sang trang đơn hàng */}
           <button 
             className="hover:text-blue-600 transition-colors relative active:scale-90"
-            onClick={() => navigate("/orders")}
+            onClick={() => navigate("/cart-page")}
           >
             <ShoppingCart size={24} strokeWidth={1.5} />
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-bold border-2 border-white">
