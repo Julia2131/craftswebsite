@@ -12,6 +12,33 @@ export default function ProductCard({ data }) {
     console.log("Ẩn bài:", data.id);
   };
 
+  const API = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
+
+  const handleAddToCart = async () => {
+    try {
+      const res = await fetch(
+        `${API}/gio-hang/cart/add/${data.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          }
+        }
+      );
+
+      if (!res.ok) {
+        alert("Thêm vào giỏ thất bại");
+        return;
+      }
+
+      alert("🛒 Đã thêm vào giỏ hàng");
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi server");
+    }
+  };
+
   return (
     <div className="flex flex-col w-full max-w-[900px] mx-auto bg-white border rounded-md shadow-sm">
 
@@ -44,7 +71,10 @@ export default function ProductCard({ data }) {
         {/* RIGHT */}
         <div className="flex gap-3">
           {/* CART */}
-          <button className="bg-[#2563EB] p-2 rounded-md text-white hover:opacity-90">
+          <button 
+            onClick={handleAddToCart}
+            className="bg-[#2563EB] p-2 rounded-md text-white hover:opacity-90"
+          >
             <ShoppingCart size={18} />
           </button>
 
