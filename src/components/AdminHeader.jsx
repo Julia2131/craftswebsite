@@ -10,7 +10,7 @@ export default function AdminHeader() {
   const [ten, setTen] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
-  const adminId = localStorage.getItem("register_admin_id");
+  const adminId = localStorage.getItem("token");
 
   useEffect(() => {
 
@@ -19,7 +19,7 @@ export default function AdminHeader() {
 
         if (!adminId) return;
 
-        const res = await fetch(`${API}/nguoi-dung/${adminId}/anh-chan-dung`, {
+        const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
@@ -31,7 +31,7 @@ export default function AdminHeader() {
           setAnhChanDungUrl(data.anhChanDungUrl);
         }
 
-        const resTen = await fetch(`${API}/nguoi-dung/${adminId}/ten`, {
+        const resTen = await fetch(`${API}/nguoi-dung/me/ten`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
@@ -64,7 +64,7 @@ export default function AdminHeader() {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
+      alert("Vui lòng đăng nhập trước khi tạo thao tác.");
       navigate("/log");
       return;
     }
@@ -76,7 +76,7 @@ export default function AdminHeader() {
         }
       });
 
-      // chưa có seller
+      // chưa có 
       if (res.status === 404) {
         navigate("/switch-to-seller");
         return;
@@ -117,7 +117,7 @@ export default function AdminHeader() {
             <span
               onClick={handleOpenUser}
               className="cursor-pointer hover:text-blue-600 transition-colors"            
-              >Kênh người mua
+              >Kênh người bán
             </span>
             <span className="text-gray-300">|</span>
             

@@ -72,9 +72,9 @@ export default function ContentModeration() {
 
     }, [page, activeTab, sort, search]);
 
-    const sellerid = localStorage.getItem("register_seller_id");
+    const sellerid = localStorage.getItem("token");
     if (!sellerid) {
-      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
+      alert("Vui lòng đăng nhập trước khi thao tác.");
       navigate("/log");
       return;
     }
@@ -161,6 +161,12 @@ export default function ContentModeration() {
                     setSearchInput(value); // hiển thị đúng user nhập
 
                     const normalized = normalizeSearch(value);
+
+                    if (!normalized) {
+                        setSearch(""); // clear
+                    } else {
+                        setSearch(normalized);
+                    }
 
                     console.log("User nhập:", value);
                     console.log("Search gửi API:", normalized);

@@ -358,9 +358,18 @@ export default function ProductCard({ data }) {
           {data.price?.toLocaleString()}đ
         </div>
 
-        <div className="text-yellow-500">
-          {"⭐".repeat(data.rating || 0)}
-        </div>
+{data.totalRating > 0 ? (
+  <div className="text-yellow-500 flex items-center gap-1">
+    {"⭐".repeat(Math.round(data.rating))}
+    <span className="text-gray-500 text-xs">
+      ({data.totalRating})
+    </span>
+  </div>
+) : (
+  <div className="text-gray-400 text-sm">
+    Chưa có đánh giá
+  </div>
+)}
 
         <a
           href={data.certificate}

@@ -290,7 +290,7 @@ export const ProductModerationDetail = () => {
 
         <Button
           variant="danger"
-          onClick={handleViolation}
+          // onClick={handleViolation}
         >
           Vi phạm
         </Button>
