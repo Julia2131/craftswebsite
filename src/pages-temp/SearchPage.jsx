@@ -18,8 +18,7 @@ export default function SearchPage() {
   const keywordFromURL = queryParams.get("q") || "";
 
   const API = import.meta.env.VITE_API_URL;
-
-  // const adminId = localStorage.getItem("register_admin_id");
+  const token = localStorage.getItem("token");
 
   // Sync keyword từ URL → input
   useEffect(() => {

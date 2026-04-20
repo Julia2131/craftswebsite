@@ -22,7 +22,7 @@ export default function ProductCard({ data }) {
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
+            "Authorization": `Bearer ${token}`
           }
         }
       );

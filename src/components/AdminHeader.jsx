@@ -172,60 +172,7 @@ export default function AdminHeader() {
         </div>
       </div>
 
-        {/* Main Header */}
-        <div className="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-          {/* LOGO */}
-          <img 
-            src={logo} 
-            className="h-10 cursor-pointer object-contain" 
-            onClick={() => navigate("/admin/home")} 
-            alt="logo" 
-          />
 
-        {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
-
-          {/* Notification icon */}
-          <img
-          className="ml-2 h-5 w-5"
-          alt="Chat"
-          src={chatIcon}
-          />
-
-          {/* USER */}
-          <div className="flex items-center gap-6 text-gray-600">
-
-            <button className="hover:text-blue-600 transition-colors relative">
-              <MessageCircle size={24} strokeWidth={1.5} />
-            </button>
-
-          <div className="h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-            {anhChanDungUrl ? (
-              <img
-                src={anhChanDungUrl}
-                alt="avatar"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center text-sm font-semibold text-slate-500">
-                {ten ? ten.charAt(0).toUpperCase() : "A"}
-              </div>
-            )}
-          </div>
-
-            {/* TÊN */}
-            <span className="text-sm font-medium">
-              {ten || "Admin"}
-            </span>
-
-            <span className="text-gray-400 text-sm">
-              | Super Admin
-            </span>
-
-          </div>
-
-        </div>
-      </div>
     </div>
     </div>
     </header>
