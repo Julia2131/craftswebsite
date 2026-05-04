@@ -66,6 +66,8 @@ export default function Profile() {
     localStorage.removeItem("anhChanDungUrl");
     localStorage.removeItem("tenDangNhap");
     localStorage.removeItem("trangThaiXacThuc");
+    localStorage.removeItem("craft_user");
+    localStorage.removeItem("anhChanDungUrl");
 
     // 2. Bắn event để Header cập nhật ngay
     window.dispatchEvent(new Event("craft_user_updated"));

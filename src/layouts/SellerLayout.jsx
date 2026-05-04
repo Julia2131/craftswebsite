@@ -7,7 +7,8 @@ export default function SellerLayout() {
   const location = useLocation();
 
   const hideNavigation =
-    location.pathname === "/seller/product/create";
+  location.pathname.includes("/seller/product/create") ||
+  location.pathname.includes("/seller/product/edit");
 
   return (
     <div className="flex flex-col min-h-screen">

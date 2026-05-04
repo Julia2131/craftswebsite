@@ -1,50 +1,33 @@
-import { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import Button from "../../components/Button";
-import ImageUploader from "../../components/ImageUploader";
-import InputField from "../../components/InputField";
-import DimensionInput from "../../components/DimensionInput";
-import VideoUploader from "../../components/VideoUploader";
-import FormInput from "../../components/FormInput";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Camera, FileText, Banknote, Truck, Check } from "lucide-react";
 import { uploadToCloudinary } from "../../services/uploadToCloudinary";
 import UploadLoading from "../../components/UploadLoading";
-import { useParams } from "react-router-dom";
+import ImageUploader from "../../components/ImageUploader";
+import VideoUploader from "../../components/VideoUploader";
 
-const sections = [
-  { id: "images", label: "Hình ảnh sản phẩm" },
-  { id: "cover", label: "Hình bìa" },
-  { id: "videos", label: "Video sản phẩm" },
-  { id: "quantity", label: "Số lượng" },
-  { id: "price", label: "Giá" },
-  { id: "weight", label: "Cân nặng" },
-  { id: "worktime", label: "Thời gian làm sản phẩm" },
-  { id: "size", label: "Kích thước" },
-  { id: "description", label: "Mô tả sản phẩm" },
-  { id: "category", label: "Danh mục" },
+const STEPS = [
+  { id: 1, label: "Hình ảnh", icon: Camera },
+  { id: 2, label: "Mô tả", icon: FileText },
+  { id: 3, label: "Tài chính", icon: Banknote },
+  { id: 4, label: "Vận chuyển", icon: Truck },
 ];
-
+ 
 export const PostCreateReadyMade = () => {
-
-  const API = import.meta.env.VITE_API_URL;
-
-  const containerRef = useRef(null);
-  const navigate = useNavigate();
-  const sectionRefs = useRef({});
-  const [activeSection, setActiveSection] = useState("images");
-
-  const [categories, setCategories] = useState([]);
-
-  const [images, setImages] = useState([]);
-  const [cover, setCover] = useState(null);
-  const [videos, setVideos] = useState([]);
-
-  const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-
   const { id } = useParams();
   const isEdit = !!id;
+  const navigate = useNavigate();
+  const API = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
+
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [categories, setCategories] = useState([]);
 
   const [form, setForm] = useState({
+    name: "",
     description: "",
     price: "",
     giaGoc: "",
@@ -52,720 +35,314 @@ export const PostCreateReadyMade = () => {
     quantity: "",
     soGioLamViecUocTinh: "",
     categoryId: "",
-    size: {
-      length: "",
-      width: "",
-      height: "",
-    }
+    length: "",
+    width: "",
+    height: "",
+    images: [], // Danh sách File hoặc URL cũ
+    cover: null, // File hoặc URL cũ
+    videos: [], // Danh sách File hoặc URL cũ
   });
 
-  const [errors, setErrors] = useState({
-    quantity: "",
-    price: "",
-    weight: "",
-    description: "",
-    size: {
-      length: "",
-      width: "",
-      height: "",
-    },
-  });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    fetch(`${API}/danh-muc`).then(res => res.json()).then(setCategories);
 
-    if (!id) {
+    if (isEdit && token) {
+      const fetchProduct = async () => {
+        try {
+          const res = await fetch(`${API}/san-pham-co-san/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const data = await res.json();
+          
+          // Tách link ảnh và video từ API
+          const links = data.sanPham?.anhVideos?.map(v => v.link) || [];
+          const images = links.filter(l => l.match(/\.(jpg|jpeg|png|webp)$/i));
+          const videos = links.filter(l => l.match(/\.(mp4|mov|webm)$/i));
 
-      // reset toàn bộ form khi tạo mới
-      setForm({
-        description: "",
-        price: "",
-        giaGoc: "",
-        weight: "",
-        quantity: "",
-        soGioLamViecUocTinh: "",
-        categoryId: "",
-        size: {
-          length: "",
-          width: "",
-          height: "",
+          setForm({
+            name: data.sanPham?.ten || "",
+            description: data.moTa || "",
+            price: data.gia || "",
+            giaGoc: data.giaGoc || "",
+            weight: data.canNang || "",
+            quantity: data.soLuongBanDau || "",
+            soGioLamViecUocTinh: data.sanPham?.soGioLamViecUocTinh || "",
+            categoryId: data.sanPham?.danhMuc?.id || "",
+            length: data.chieuDai || "",
+            width: data.chieuRong || "",
+            height: data.chieuCao || "",
+            // Đổ trực tiếp mảng String vào để Component Uploader hiển thị
+            images: images, 
+            videos: videos,
+            cover: images[0] || null,
+          });
+        } catch (err) {
+          console.error("Lỗi lấy dữ liệu edit:", err);
         }
-      });
-
-      setImages([]);
-      setVideos([]);
-      setCover(null);
-
-      return;
+      };
+      fetchProduct();
     }
+  }, [id, token]);
 
-    const fetchProduct = async () => {
-
-      const res = await fetch(`${API}/san-pham-co-san/${id}`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (!res.ok) {
-        if (res.status === 403) {
-          alert("Bạn không có quyền xem sản phẩm này");
-        } else if (res.status === 401) {
-          navigate("/log");
-        } else {
-          alert("Lỗi tải sản phẩm");
-        }
-        return;
-      }
-      const data = await res.json();
-
-      // console.log("DATA", data);
-
-      setForm({
-        description: data.moTa || "",
-        price: data.gia || "",
-        giaGoc: data.giaGoc || "",
-        weight: data.canNang || "",
-        quantity: data.soLuongBanDau || "",
-
-        soGioLamViecUocTinh: data.sanPham?.soGioLamViecUocTinh || "",
-
-        categoryId: data.sanPham?.danhMuc?.id || "",
-
-        size: {
-          length: data.chieuDai || "",
-          width: data.chieuRong || "",
-          height: data.chieuCao || ""
-        }
-      });
-
-      const links = data.sanPham?.anhVideos?.map(v => v.link) || [];
-
-      const imageLinks = links.filter(l =>
-        l.includes(".jpg") || l.includes(".png") || l.includes(".jpeg")
-      );
-
-      const videoLinks = links.filter(l =>
-        l.includes(".mp4") || l.includes(".mov")
-      );
-
-      console.log("====== ALL MEDIA LINKS ======");
-      console.log("RAW LINKS:", links);
-
-      console.log("------ IMAGE LINKS ------");
-      imageLinks.forEach((link, i) => {
-        console.log(`IMG ${i + 1}:`, link);
-      });
-
-      console.log("------ VIDEO LINKS ------");
-      videoLinks.forEach((link, i) => {
-        console.log(`VIDEO ${i + 1}:`, link);
-      });
-
-      console.log("TOTAL IMG:", imageLinks.length);
-      console.log("TOTAL VIDEO:", videoLinks.length);
-
-      console.log("================================");
-
-      setImages(imageLinks);
-      setVideos(videoLinks);
-
-      if (imageLinks.length > 0) {
-        setCover(imageLinks[0]);
-      }
-
-    };
-
-    fetchProduct();
-
-  }, [id]);
-
-  useEffect(() => {
-    console.log("FORM STATE", form);
-  }, [form]);
-
-  const uploadFiles = async (files, folder) => {
-
-    if (!files) return [];
-
-    const fileArray = (Array.isArray(files) ? files : [files])
-    .filter(f => f);
-
-    const urls = await Promise.all(
-      fileArray.map(file => {
-
-        if (typeof file === "string") return file;
-
-        return uploadToCloudinary(file, folder);
-      })
-    );
-
-    return urls;
-  };
-
-  const uploadMedia = async () => {
-
-    const coverUrls = await uploadFiles(cover, "san-pham/cover");
-
-    const imageUrls = await uploadFiles(images, "san-pham/images");
-
-    const videoUrls = await uploadFiles(videos, "san-pham/video");
-
-    return [
-      ...(coverUrls || []),
-      ...(imageUrls || []),
-      ...(videoUrls || [])
-    ];
-  };
-
-  const scrollToSection = (id) => {
-    const section = sectionRefs.current[id];
-    if (!section) return;
-
-    const top = section.offsetTop - 80;
-
-    containerRef.current.scrollTo({
-      top,
-      behavior: "smooth",
-    });
-  };
-
-  const handleScroll = () => {
-    const scrollTop = containerRef.current.scrollTop;
-
-    let current = activeSection;
-
-    sections.forEach((sec) => {
-      const el = sectionRefs.current[sec.id];
-      if (!el) return;
-
-      if (scrollTop >= el.offsetTop - 120) {
-        current = sec.id;
-      }
-    });
-
-    setActiveSection(current);
-  };
-
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    if (!token) {
-      alert("Vui lòng đăng nhập trước khi tạo sản phẩm");
-      navigate("/log");
+  const validateStep = () => {
+    let newErrors = {};
+    if (step === 1 && !form.cover) newErrors.cover = "Nàng ơi, hãy chọn một tấm ảnh bìa thật xinh nhé!";
+    if (step === 2) {
+      if (!form.name || form.name.trim().length < 3) newErrors.name = "Nàng ơi, đặt tên cho tác phẩm nhé (ít nhất 3 ký tự).";
+      if (!form.description || form.description.length < 10) newErrors.description = "Nàng kể thêm câu chuyện sản phẩm nhé (ít nhất 10 ký tự).";
+      if (!form.categoryId) newErrors.categoryId = "Nàng chọn một danh mục phù hợp nha.";
     }
-  }, []);
-
-  const buildPayload = () => {
-    return {
-
-      moTa: form.description,
-
-      gia: Number(form.price),
-      giaGoc: Number(form.giaGoc),
-
-      canNang: Number(form.weight),
-
-      chieuDai: Number(form.size.length),
-      chieuRong: Number(form.size.width),
-      chieuCao: Number(form.size.height),
-
-      soLuongBanDau: Number(form.quantity),
-      soLuongHienTai: Number(form.quantity),
-
-      trangThaiSPCS: "LUU_AN",
-
-      danhMucId: Number(form.categoryId),
-
-      trangThaiSanPham: "NHAP",
-
-      soGioLamViecUocTinh: Number(form.soGioLamViecUocTinh),
-
-      trangThaiChungChi: "LUU_AN"
-
-    };
-  };
-
-  useEffect(() => {
-    fetch(`${API}/danh-muc`)
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error(err));
-  }, []);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    el.addEventListener("scroll", handleScroll);
-
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const validateAll = () => {
-    let isValid = true;
-    let newErrors = {
-      quantity: "",
-      price: "",
-      weight: "",
-      description: "",
-      size: {
-        length: "",
-        width: "",
-        height: "",
-      },
-    };
-
-    // PRICE
-    if (!form.price) {
-      newErrors.price = "Giá không được để trống";
-      isValid = false;
-    } else if (Number(form.price) <= 0) {
-      newErrors.price = "Giá phải > 0";
-      isValid = false;
+    if (step === 3) {
+      if (!form.price || form.price <= 0) newErrors.price = "Nàng đừng quên điền giá sản phẩm nhé!";
+      if (!form.quantity || form.quantity <= 0) newErrors.quantity = "Nàng ơi, sản phẩm này hiện có bao nhiêu món nhỉ?";
     }
-
-    // QUANTITY
-    if (!form.quantity) {
-      newErrors.quantity = "Số lượng không được để trống";
-      isValid = false;
-    } else if (Number(form.quantity) <= 0) {
-      newErrors.quantity = "Số lượng phải > 0";
-      isValid = false;
+    if (step === 4) {
+      if (!form.weight) newErrors.weight = "Cân nặng giúp tính phí ship chính xác hơn đó.";
     }
-
-    // WEIGHT
-    if (!form.weight) {
-      newErrors.weight = "Cân nặng không được để trống";
-      isValid = false;
-    } else if (Number(form.weight) <= 0) {
-      newErrors.weight = "Cân nặng phải > 0";
-      isValid = false;
-    }
-
-    // DESCRIPTION
-    if (!form.description || form.description.trim().length < 10) {
-      newErrors.description = "Mô tả ít nhất 10 ký tự";
-      isValid = false;
-    }
-
-    // SIZE
-    if (Number(form.size.length) <= 0) {
-      newErrors.size.length = "Chiều dài phải > 0";
-      isValid = false;
-    }
-
-    if (Number(form.size.width) <= 0) {
-      newErrors.size.width = "Chiều rộng phải > 0";
-      isValid = false;
-    }
-
-    if (Number(form.size.height) <= 0) {
-      newErrors.size.height = "Chiều cao phải > 0";
-      isValid = false;
-    }
-
     setErrors(newErrors);
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   };
 
-  const createProduct = async (trangThai) => {
+  const handleNext = () => { if (validateStep()) setStep(s => s + 1); };
 
-    if (!validateAll()) {
-      alert("Vui lòng nhập đúng thông tin");
-      return;
-    }
+  const handleSubmit = async (trangThai) => {
+    setLoading(true);
+    setProgress(20);
 
     try {
+      // Hàm xử lý upload: Nếu là string (URL cũ) thì giữ nguyên, nếu là File thì upload mới
+      const uploadHandler = async (files) => {
+        const arr = Array.isArray(files) ? files : [files];
+        return Promise.all(
+          arr.filter(f => f).map(file => 
+            typeof file === "string" ? file : uploadToCloudinary(file, "san-pham")
+          )
+        );
+      };
 
-      setLoading(true);
-      setProgress(20);
+      const coverUrls = await uploadHandler(form.cover);
+      const imageUrls = await uploadHandler(form.images);
+      const videoUrls = await uploadHandler(form.videos);
 
-      const mediaLinks = await uploadMedia();
+      setProgress(70);
 
-      setProgress(60);
+      const payload = {
+        ten: form.name,
+        moTa: form.description,
+        gia: Number(form.price),
+        giaGoc: Number(form.giaGoc),
+        canNang: Number(form.weight),
+        chieuDai: Number(form.length),
+        chieuRong: Number(form.width),
+        chieuCao: Number(form.height),
+        soLuongBanDau: Number(form.quantity),
+        soLuongHienTai: Number(form.quantity),
+        danhMucId: Number(form.categoryId),
+        soGioLamViecUocTinh: Number(form.soGioLamViecUocTinh),
+        // mediaLinks: [...coverUrls, ...imageUrls, ...videoUrls],
+        coverUrls: coverUrls?.[0] || null, // anh bia là ảnh đầu tiên trong mảng coverUrls
+        imageUrls: imageUrls,
+        videoUrls: videoUrls,
+        trangThaiSanPham: trangThai,
+        trangThaiSPCS: trangThai,
+        trangThaiChungChi: trangThai
+      };
 
-      const payload = buildPayload();
+      // in ra payload trước khi gửi để debug
+      console.log("Payload gửi đi:", payload);
 
-      payload.trangThaiSanPham = trangThai;
-      payload.trangThaiChungChi = trangThai;
-      payload.trangThaiSPCS = trangThai;
-
-      payload.mediaLinks = mediaLinks;
-      console.log("PAYLOAD", payload);
-
-      const res = await fetch(`${API}/san-pham-co-san`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(payload),
+      const url = isEdit ? `${API}/san-pham-co-san/${id}` : `${API}/san-pham-co-san`;
+      await fetch(url, {
+        method: isEdit ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        throw new Error("Tạo sản phẩm thất bại");
-      }
-
       setProgress(100);
-
-      navigate("/seller/product/success");
-
+      navigate(isEdit ? "/seller/product/all" : "/seller/product/success");
     } catch (err) {
-
-      console.error(err);
-      alert("Có lỗi xảy ra");
-
-    } finally {
-
-      setLoading(false);
-
-    }
-  };
-
-  const updateProduct = async (trangThai) => {
-
-    if (!validateAll()) {
-      alert("Vui lòng nhập đúng thông tin");
-      return;
-    }
-
-    setLoading(true);
-
-    const mediaLinks = await uploadMedia();
-
-    const payload = buildPayload();
-
-    payload.trangThaiSanPham = trangThai;
-    payload.trangThaiChungChi = trangThai;
-    payload.trangThaiSPCS = trangThai;
-
-    payload.mediaLinks = mediaLinks;
-
-    console.log("PAYLOAD", payload);
-
-    await fetch(`${API}/san-pham-co-san/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    setLoading(false);
-
-    navigate("/seller/product/all");
+      alert("Nàng ơi, có lỗi nhỏ xảy ra rồi!");
+      console.error("Lỗi khi tạo/sửa sản phẩm:", err);
+    } finally { setLoading(false); }
   };
 
   return (
-    <>
-      {loading && (
-        <UploadLoading
-          progress={progress}
-          title={
-            isEdit
-              ? "Đang cập nhật sản phẩm handmade..."
-              : "Đang tạo sản phẩm handmade..."
-          }
-          description={
-            isEdit
-              ? "Đang cập nhật hình ảnh và video lên hệ thống"
-              : "Đang tải hình ảnh và video lên hệ thống"
-          }
-        />
-      )}
+    <div className="min-h-screen bg-[#FDFBF7] text-[#333] font-light">
+      {loading && <UploadLoading progress={progress} title="Đang thổi hồn vào sản phẩm..." />}
 
-      <div className="flex flex-col h-screen bg-white px-[120px] pt-[40px]">
+      <div className="max-w-4xl mx-auto pt-16 pb-24 px-6">
+        {/* STEPPER - Luxury Terracotta Style */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-serif mb-8 text-[#3E3E3E]">{isEdit ? "Cập nhật tác phẩm" : "Tạo tác phẩm mới"}</h1>
+          
+          {/* DEBUG VIEW - Hường dùng cái này để xem link ảnh thực tế */}
+{/* {isEdit && (
+  <div className="mb-6 p-4 bg-stone-100 rounded-xl text-[10px] font-mono overflow-auto max-h-40 border border-stone-200">
+    <p className="font-bold text-stone-500 mb-1">🔍 DEBUG: Dữ liệu từ Backend trả về React:</p>
+    <pre>{JSON.stringify(form.images, null, 2)}</pre>
+    <p className="mt-2 font-bold text-stone-500">🖼️ Link Cover hiện tại: {typeof form.cover === 'string' ? form.cover : 'Là File/Null'}</p>
+  </div>
+)} */}
 
-        <h1 className="text-3xl font-bold mb-6">
-          {isEdit ? "Chỉnh sửa sản phẩm" : "Tạo sản phẩm"}
-        </h1>
-
-        <div className="flex flex-1 gap-10 overflow-hidden">
-
-          <nav className="w-[230px] sticky top-[120px] h-fit">
-            <div className="flex flex-col gap-2">
-              {sections.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`text-left px-4 py-2 rounded-lg transition
-                  ${
-                    activeSection === item.id
-                      ? "bg-[#4338CA] text-white"
-                      : "hover:bg-[#6366F1] hover:text-white"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </nav>
-
-          <div className="flex flex-col flex-1 overflow-hidden">
-
-            <div
-              ref={containerRef}
-              className="flex-1 overflow-y-auto pr-4"
-            >
-
-              {sections.map((section) => (
-                <div
-                  key={section.id}
-                  ref={(el) => (sectionRefs.current[section.id] = el)}
-                  className="mb-16"
-                >
-                  <SectionBlock
-                    id={section.id}
-                    title={section.label}
-                    form={form}
-                    setForm={setForm}
-                    errors={errors}
-                    setErrors={setErrors}
-                    categories={categories}
-                    setImages={setImages}
-                    setCover={setCover}
-                    setVideos={setVideos}
-                    images={images}
-                    cover={cover}
-                    videos={videos}
-                  />
+          <div className="flex justify-between items-center relative max-w-md mx-auto">
+            <div className="absolute top-1/2 left-0 w-full h-[1px] bg-stone-200 -z-10" />
+            {STEPS.map((s) => {
+              const Icon = s.icon;
+              const active = step >= s.id;
+              return (
+                <div key={s.id} className="flex flex-col items-center gap-2">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-500
+                    ${active ? "bg-[#C58971] border-[#C58971] text-white shadow-lg" : "bg-white border-stone-200 text-stone-300"}`}>
+                    {step > s.id ? <Check size={20} /> : <Icon size={20} />}
+                  </div>
+                  <span className={`text-[10px] uppercase tracking-widest ${step === s.id ? "text-[#C58971] font-bold" : "text-stone-400"}`}>{s.label}</span>
                 </div>
-              ))}
-
-            </div>
-
-            <div className="flex justify-center gap-6 border-t pt-4 pb-2 bg-white">
-
-              <Button variant="danger">Hủy</Button>
-
-              <Button variant="outline">Xem trước</Button>
-
-              <Button
-                variant="primary"
-                onClick={() => {
-                  if (isEdit)
-                    updateProduct("LUU_AN")
-                  else
-                    createProduct("LUU_AN")
-                }}
-              >
-                Lưu và ẩn
-              </Button>
-
-              <Button
-                variant="success"
-                onClick={() => {
-                  if (isEdit)
-                    updateProduct("LUU_HIEN")
-                  else
-                    createProduct("LUU_HIEN")
-                }}
-              >
-                Lưu và hiển thị
-              </Button>
-
-            </div>
-
+              );
+            })}
           </div>
+        </div>
 
+        {/* MAIN FORM */}
+        <div className="bg-white/70 backdrop-blur-md rounded-3xl p-10 shadow-xl border border-white/50 min-h-[500px] flex flex-col justify-between">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {step === 1 && (
+                <div className="space-y-8">
+                  <h3 className="text-xl font-serif border-b pb-4">Hình ảnh & Thước phim</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div className="col-span-1">
+                      <label className="text-xs font-semibold text-stone-400 mb-2 block uppercase tracking-tighter">Ảnh bìa đại diện</label>
+                      <div className="aspect-square rounded-2xl overflow-hidden shadow-inner">
+                         <ImageUploader 
+                            multiple={false} 
+                            value={form.cover ? (Array.isArray(form.cover) ? form.cover : [form.cover]) : []} 
+                            onChange={(files) => setForm({...form, cover: files[0]})} 
+                         />
+                      </div>
+                      {errors.cover && <p className="text-rose-400 text-[10px] mt-2 italic">{errors.cover}</p>}
+                    </div>
+                    <div className="col-span-3">
+                      <label className="text-xs font-semibold text-stone-400 mb-2 block uppercase tracking-tighter">Album chi tiết</label>
+                      <ImageUploader multiple limit={8} value={form.images} onChange={(f) => setForm({...form, images: f})} />
+                    </div>
+                  </div>
+                  <div className="max-w-xs">
+                    <label className="text-xs font-semibold text-stone-400 mb-2 block uppercase tracking-tighter">Video giới thiệu</label>
+                    <VideoUploader value={form.videos} onChange={(v) => setForm({...form, videos: v})} />
+                  </div>
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-8">
+                  <h3 className="text-xl font-serif border-b pb-4">Kể về câu chuyện tác phẩm</h3>
+                  <div className="space-y-2">
+                    <input
+                      className="w-full p-5 rounded-2xl border bg-stone-50/50 outline-none focus:border-[#C58971] transition-all"
+                      value={form.name}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setForm(prev => ({ ...prev, name: value }));
+                        if (errors.name) setErrors(prev => ({ ...prev, name: "" }));
+                      }}
+                      placeholder="Tên tác phẩm của Nàng..."
+                    />
+                    {errors.name && (
+                      <p className="text-rose-400 text-xs italic">
+                        {errors.name}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <textarea
+                      className={`w-full p-6 rounded-2xl border ${errors.description ? "border-rose-300" : "border-stone-100"} bg-stone-50/50 outline-none focus:border-[#C58971] min-h-[180px] transition-all`}
+                      value={form.description}
+                      onChange={(e) => setForm({...form, description: e.target.value})}
+                      placeholder="Nàng hãy chia sẻ về chất liệu, cảm hứng thiết kế..."
+                    />
+                    {errors.description && <p className="text-rose-400 text-xs italic">{errors.description}</p>}
+                  </div>
+                  <div className="max-w-sm">
+                    <label className="text-xs font-semibold text-stone-400 mb-2 block uppercase tracking-tighter">Danh mục sản phẩm</label>
+                    <select
+                      className="w-full p-4 rounded-xl border-none bg-stone-100 text-sm outline-none focus:ring-1 focus:ring-[#C58971]"
+                      value={form.categoryId}
+                      onChange={(e) => setForm({...form, categoryId: e.target.value})}
+                    >
+                      <option value="">-- Chọn danh mục --</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.ten}</option>)}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-8">
+                  <h3 className="text-xl font-serif border-b pb-4">Định giá & Công sức</h3>
+                  <div className="grid grid-cols-2 gap-8">
+                    <LuxuryInput label="Giá bán (₫)" name="price" value={form.price} onChange={setForm} error={errors.price} />
+                    <LuxuryInput label="Số lượng hiện có" name="quantity" value={form.quantity} onChange={setForm} error={errors.quantity} />
+                  </div>
+                  <div className="max-w-xs">
+                    <LuxuryInput label="Công sức (Phút)" name="soGioLamViecUocTinh" value={form.soGioLamViecUocTinh} onChange={setForm} />
+                  </div>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div className="space-y-8">
+                  <h3 className="text-xl font-serif border-b pb-4">Đóng gói & Vận chuyển</h3>
+                  <div className="max-w-xs">
+                    <LuxuryInput label="Cân nặng (kg)" name="weight" value={form.weight} onChange={setForm} error={errors.weight} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <LuxuryInput label="Dài (cm)" name="length" value={form.length} onChange={setForm} />
+                    <LuxuryInput label="Rộng (cm)" name="width" value={form.width} onChange={setForm} />
+                    <LuxuryInput label="Cao (cm)" name="height" value={form.height} onChange={setForm} />
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* ACTIONS */}
+          <div className="flex justify-between mt-12">
+            <button onClick={step === 1 ? () => navigate(-1) : () => setStep(s => s - 1)} className="text-stone-400 hover:text-stone-600 font-medium">
+              {step === 1 ? "Hủy bỏ" : "Quay lại"}
+            </button>
+            <div className="flex gap-4">
+              {step < 4 ? (
+                <button onClick={handleNext} className="px-10 py-3 rounded-full bg-stone-800 text-white hover:bg-black transition shadow-lg">Tiếp theo</button>
+              ) : (
+                <>
+                  <button onClick={() => handleSubmit("LUU_AN")} className="px-8 py-3 rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50">Lưu nháp</button>
+                  <button onClick={() => handleSubmit("LUU_HIEN")} className="px-10 py-3 rounded-full bg-[#C58971] text-white shadow-lg hover:shadow-orange-200">Đăng bán</button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
-const SectionBlock = ({
-  id,
-  title,
-  form,
-  setForm,
-  errors,
-  setErrors,
-  categories,
-  setImages,
-  setCover,
-  setVideos,
-  images,
-  cover,
-  videos
-}) =>  {  return (
-    <section className="border-b pb-10">
-
-      <h2 className="text-xl font-semibold mb-6">
-        {title}
-      </h2>
-
-      {id === "images" && (
-        <ImageUploader 
-          multiple 
-          // value={images ? [images] : []}
-          value={images}
-          onChange={(files) => setImages(files)}
-        />
-      )}
-
-      {id === "cover" && (
-        <ImageUploader 
-          multiple={false} 
-          value={cover ? [cover] : []}
-          // value={cover}
-          // onChange={(file) => setCover(file)}
-          onChange={(files) => setCover(files[0] || null)}
-        />
-      )}
-
-      {id === "videos" && (
-        <VideoUploader 
-          multiple
-          // value={videos ? [videos] : []}
-          value={videos}
-          onChange={(files) => setVideos(files)}
-        />
-      )}
-
-      {id === "quantity" && (
-        <div className="max-w-[320px]">
-          <InputField
-            id="product-quantity"
-            label="Số lượng"
-            type="number"
-            placeholder="Nhập số lượng sản phẩm"
-            helperText="Số lượng tồn kho"
-            error={errors.quantity}
-            value={form.quantity}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setForm({ ...form, quantity: value });
-              // validateField("quantity", value);
-            }}
-          />
-        </div>
-      )}
-
-      {id === "price" && (
-        <div className="max-w-[320px]">
-          <InputField
-            id="product-price"
-            label="Giá bán"
-            type="number"
-            placeholder="Nhập giá bán"
-            helperText="Giá hiển thị cho khách hàng"
-            error={errors.price}
-            suffix="₫"
-            value={form.price}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setForm({ ...form, price: value });
-              // validateField("price", value);
-            }}
-          />
-        </div>
-      )}
-
-      {id === "weight" && (
-        <div className="max-w-[320px]">
-          <InputField
-            id="product-weight"
-            label="Cân nặng sau khi đóng gói"
-            type="number"
-            placeholder="Nhập cân nặng"
-            helperText="Dùng để tính phí vận chuyển"
-            error={errors.weight}
-            suffix="kg"
-            value={form.weight}
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setForm({ ...form, weight: value });
-              // validateField("weight", value);
-            }}
-          />
-        </div>
-      )}
-
-      {id === "size" && (
-        <div className="max-w-[500px]">
-          <DimensionInput
-            value={form.size}
-            setValue={(v) =>
-              setForm({ ...form, size: v })
-            }
-            errors={errors.size}
-            // validateSize={validateSize}
-          />
-        </div>
-      )}
-
-      {id === "category" && (
-        <div className="max-w-[320px]">
-          <label className="block mb-2 font-medium">
-            Chọn danh mục
-          </label>
-
-          <select
-            className="border rounded-lg px-3 py-2 w-full"
-            value={form.categoryId}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                categoryId: e.target.value,
-              })
-            }
-          >
-            <option value="">-- Chọn danh mục --</option>
-
-            {categories?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.ten}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {id === "worktime" && (
-        <div className="max-w-[320px]">
-          <InputField
-            id="product-worktime"
-            label="Số giờ làm một sản phẩm"
-            type="number"
-            placeholder="Nhập số giờ làm"
-            helperText="Thời gian ước tính để làm sản phẩm"
-            value={form.soGioLamViecUocTinh}
-            suffix="Phút"
-            onChange={(e) => {
-              const value = e.target.value;
-
-              setForm({
-                ...form,
-                soGioLamViecUocTinh: value
-              });
-            }}
-          />
-        </div>
-      )}
-
-      {id === "description" && (
-        <div className="max-w-[600px]">
-          <FormInput
-          label="Câu chuyện thú vị về sản phẩm"
-          name="product-description"
-          type="textarea"
-          value={form.description}
-          placeholder="Hãy kể câu chuyện về sản phẩm..."
-          helper="Ví dụ: chất liệu, cách sử dụng, cảm hứng thiết kế"
-          error={errors.description}
-          onChange={(e) => {
-            const value = e.target.value;
-            setForm({ ...form, description: value });
-            // validateField("description", value);
-          }}
-          />
-          </div>
-        )}
-
-    </section>
-  );
-
-};
+const LuxuryInput = ({ label, name, value, onChange, error, placeholder }) => (
+  <div className="space-y-2">
+    <label className="text-[10px] uppercase font-bold text-stone-400 tracking-widest">{label}</label>
+    <input
+      className={`w-full p-4 rounded-xl bg-stone-50 border ${error ? "border-rose-300" : "border-transparent"} focus:bg-white focus:border-[#C58971] transition-all outline-none text-sm`}
+      value={value}
+      placeholder={placeholder || "..."}
+      onChange={(e) => onChange(prev => ({...prev, [name]: e.target.value}))}
+      type="number"
+    />
+    {error && <p className="text-rose-400 text-[10px] italic">{error}</p>}
+  </div>
+);

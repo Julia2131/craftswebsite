@@ -7,15 +7,14 @@ export default function AdminLayout() {
   const location = useLocation();
 
   const hideNavigation =
-    location.pathname === "/admin/home";
-
+    location.pathname.includes("/admin/content-moderation/duyet") ;
 
   return (
     <div className="flex flex-col min-h-screen">
       <AdminHeader />
       
       <div className="flex flex-1">
-        <AdminSidebar />
+        {hideNavigation ? null : <AdminSidebar />}
         <main className="flex-1 bg-gray-100 overflow-y-auto">
           <Outlet />
         </main>

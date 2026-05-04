@@ -4,11 +4,12 @@ import { MessageCircle, ShoppingCart, User } from "lucide-react";
 import logo from "../assets/Hero.png";
 import searchIcon from "../assets/Icon.png";
 
-export default function Header() {
+export default function Header() { 
   const navigate = useNavigate();
   
   const [image, setImage] = useState("");
   const [name, setname] = useState("");
+  const [keyword, setKeyword] = useState("");
   
   const token = localStorage.getItem("token");
 
@@ -101,6 +102,14 @@ export default function Header() {
     }
   };
 
+  // Tìm kiếm 
+  const handleSearch = () => {
+    if (!keyword.trim()) return;
+
+    // chuyển sang trang search + truyền query
+    navigate(`/search?q=${encodeURIComponent(keyword)}`);
+  };
+
   return (
     <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
       {/* Sub-header */}
@@ -132,8 +141,24 @@ export default function Header() {
         />
 
         <div className="flex-1 flex items-center border rounded-md px-3 py-2 bg-white">
-          <input className="w-full outline-none text-sm placeholder-gray-400" placeholder="Nội dung tìm kiếm ..." />
-          <img src={searchIcon} className="h-5 w-5 cursor-pointer" alt="search" />
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
+            className="w-full outline-none text-sm placeholder-gray-400"
+            placeholder="Nội dung tìm kiếm ..."
+          />
+
+          <img
+            src={searchIcon}
+            className="h-5 w-5 cursor-pointer"
+            alt="search"
+            onClick={handleSearch}
+          />
         </div>
 
         <div className="flex items-center gap-6 text-gray-600">
@@ -144,7 +169,7 @@ export default function Header() {
           {/* SỬA LỖI 2: Bấm icon giỏ hàng chuyển sang trang đơn hàng */}
           <button 
             className="hover:text-blue-600 transition-colors relative active:scale-90"
-            onClick={() => navigate("/orders")}
+            onClick={() => navigate("/cart-page")}
           >
             <ShoppingCart size={24} strokeWidth={1.5} />
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-bold border-2 border-white">

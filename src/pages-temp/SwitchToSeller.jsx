@@ -1,246 +1,325 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { User, MapPin, CreditCard, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import FormInput from "../components/FormInput";
+import provincesData from "../assets/vietnam-provinces.json";
 
-export default function SwitchToSeller({ buyerId }) {
-
+export default function SwitchToSeller() {
   const navigate = useNavigate();
+  const API = import.meta.env.VITE_API_URL;
+  const token = localStorage.getItem("token");
+
+  const [step, setStep] = useState(1);
+  const [banks, setBanks] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     tienNhanCong: "",
     tienThuongHieu: "",
     maSoThue: "",
+    province: "",
+    district: "",
+    ward: "",
+    cuThe: "",
     maNganHang: "",
     tenNganHang: "",
     soTaiKhoan: "",
-    tenTaiKhoan: ""
+    tenTaiKhoan: "",
   });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    setForm({
-      ...form,
-      [name]: value
-    });
-
-    setErrors({
-      ...errors,
-      [name]: ""
-    });
-  };
 
   const [errors, setErrors] = useState({});
 
-  const API = import.meta.env.VITE_API_URL;
-  const token = localStorage.getItem("token");
-  
-  const handleSubmit = async () => {
+  useEffect(() => {
+    fetch("https://api.vietqr.io/v2/banks")
+      .then(res => res.json())
+      .then(data => setBanks(data.data || []))
+      .catch(() => setBanks([]));
+  }, []);
 
-    const newErrors = {};
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
+  };
 
-    if (!token) {
-      alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
-      navigate("/log");
-      return;
-    }
+  const selectedProvince = provincesData.find(p => p.name === form.province);
+  const districts = selectedProvince?.districts || [];
+  const wards = districts.find(d => d.name === form.district)?.wards || [];
 
-    // tiền nhân công
-    if (!form.tienNhanCong) {
-      newErrors.tienNhanCong = "Vui lòng nhập tiền nhân công";
-    } else if (!/^\d+$/.test(form.tienNhanCong)) {
-      newErrors.tienNhanCong = "Tiền nhân công phải là số";
-    }
+  /* ===== VALIDATION giữ nguyên ===== */
+  const validateStep1 = () => {
+    const e = {};
+    if (!/^\d+$/.test(form.tienNhanCong)) e.tienNhanCong = "Phải là số";
+    if (!/^\d+$/.test(form.tienThuongHieu)) e.tienThuongHieu = "Phải là số";
+    if (!/^\d{10}(\d{3})?$/.test(form.maSoThue)) e.maSoThue = "MST không hợp lệ";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
-    // tiền thương hiệu
-    if (!form.tienThuongHieu) {
-      newErrors.tienThuongHieu = "Vui lòng nhập tiền thương hiệu";
-    } else if (!/^\d+$/.test(form.tienThuongHieu)) {
-      newErrors.tienThuongHieu = "Tiền thương hiệu phải là số";
-    }
+  const validateStep2 = () => {
+    const e = {};
+    if (!form.province) e.province = "Chọn tỉnh";
+    if (!form.district) e.district = "Chọn quận";
+    if (!form.ward) e.ward = "Chọn phường";
+    if (!form.cuThe) e.cuThe = "Nhập địa chỉ";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
-    // mã số thuế (10 hoặc 13 số)
-    if (!form.maSoThue) {
-      newErrors.maSoThue = "Vui lòng nhập mã số thuế";
-    } else if (!/^\d{10}(\d{3})?$/.test(form.maSoThue)) {
-      newErrors.maSoThue = "Mã số thuế phải có 10 hoặc 13 chữ số";
-    }
+  const validateStep3 = () => {
+    const e = {};
+    if (!form.maNganHang) e.maNganHang = "Chọn ngân hàng";
+    if (!/^\d{6,20}$/.test(form.soTaiKhoan)) e.soTaiKhoan = "6-20 số";
+    if (form.tenTaiKhoan.length < 3) e.tenTaiKhoan = "Tên quá ngắn";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
-    // mã ngân hàng
-    if (!form.maNganHang) {
-      newErrors.maNganHang = "Vui lòng nhập mã ngân hàng";
-    }
-
-    // số tài khoản
-    if (!form.soTaiKhoan) {
-      newErrors.soTaiKhoan = "Vui lòng nhập số tài khoản";
-    } else if (!/^\d{6,20}$/.test(form.soTaiKhoan)) {
-      newErrors.soTaiKhoan = "Số tài khoản phải từ 6-20 chữ số";
-    }
-
-    // tên tài khoản
-    if (!form.tenTaiKhoan) {
-      newErrors.tenTaiKhoan = "Vui lòng nhập tên tài khoản";
-    } else if (form.tenTaiKhoan.length < 3) {
-      newErrors.tenTaiKhoan = "Tên tài khoản quá ngắn";
-    }
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
-
-    console.log("submit form", form);
-
-    try {
-      const payload = {
-        tienNhanCong: Number(form.tienNhanCong),
-        tienThuongHieu: Number(form.tienThuongHieu),
-        maSoThue: form.maSoThue,
-        nganHang: {
-          maNganHang: form.maNganHang,
-          tenNganHang: form.tenNganHang,
-          soTaiKhoan: form.soTaiKhoan,
-          tenTaiKhoan: form.tenTaiKhoan
-        }
-      };
-
-      const res = await fetch(`${API}/thong-tin-nguoi-ban`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Có lỗi xảy ra");
-        return;
-      }
-
-      console.log(data);
-
-      // try{
-      //   //gọi API lấy sellerId
-      //   const sellerRes = await fetch(`${API}/thong-tin-nguoi-ban/me`, {
-      //     headers: {
-      //       "Authorization": `Bearer ${localStorage.getItem("token")}`
-      //     }
-      //   });
-      //   const sellerId = await sellerRes.json();
-
-      //   //lưu sellerId
-      //   // localStorage.setItem("register_seller_id", sellerId);
-
-      //   console.log("register_seller_id:", sellerId);
-      // }catch(err){
-      //   console.error(`Lỗi khi lấy sellerId: ${err}`);
-      // }
-
-      navigate("/seller/home");
-    } catch (err) {
-      console.error(`Lỗi khi tạo tài khoản người bán: ${err}`);
-      alert("Có lỗi xảy ra khi tạo tài khoản người bán");
+  const handleNext = () => {
+    if ((step === 1 && validateStep1()) || (step === 2 && validateStep2())) {
+      setStep(step + 1);
     }
   };
 
+  const handleSubmit = async () => {
+    if (!validateStep3()) return;
+    setLoading(true);
+
+    try {
+      // TODO: API địa chỉ
+      // const diaChiRes = await fetch(`${API}/dia-chi`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      //   body: JSON.stringify({
+      //     province: form.province,
+      //     district: form.district,
+      //     ward: form.ward,
+      //     cuThe: form.cuThe,
+      //   }),
+      // });
+
+      // const diaChi = await diaChiRes.json();
+
+      // // TODO: API seller
+      // await fetch(`${API}/thong-tin-nguoi-ban`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      //   body: JSON.stringify({
+      //     tienNhanCong: Number(form.tienNhanCong),
+      //     tienThuongHieu: Number(form.tienThuongHieu),
+      //     maSoThue: form.maSoThue,
+      //     diaChiId: diaChi.id,
+      //     nganHang: {
+      //       maNganHang: form.maNganHang,
+      //       tenNganHang: form.tenNganHang,
+      //       soTaiKhoan: form.soTaiKhoan,
+      //       tenTaiKhoan: form.tenTaiKhoan,
+      //     },
+      //   }),
+      // });
+
+    await fetch(`${API}/thong-tin-nguoi-ban/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(form),
+    });
+
+      navigate("/seller/home");
+    } catch {
+      alert("Lỗi tạo tài khoản");
+    }
+
+    setLoading(false);
+  };
+
+  const steps = [
+    { icon: User, label: "Thông tin" },
+    { icon: MapPin, label: "Kho hàng" },
+    { icon: CreditCard, label: "Ngân hàng" },
+  ];
+
   return (
-    <div className="max-w-xl mx-auto flex flex-col gap-6">
+    <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center px-6">
 
-      <h2 className="text-2xl font-bold">
-        Thiết lập thông tin người bán
-      </h2>
+      <div className="w-full max-w-4xl p-10 rounded-3xl backdrop-blur-xl bg-white/60 shadow-xl border border-white/40">
 
-      {/* tiền nhân công */}
-      <FormInput
-        label="Tiền nhân công"
-        name="tienNhanCong"
-        value={form.tienNhanCong}
-        onChange={handleChange}
-        placeholder="Ví dụ: 100000"
-        helper="Số tiền bạn nhận khi hoàn thành sản phẩm"
-        error={errors.tienNhanCong}
-        icon="₫"
-      />
+        {/* TITLE */}
+        <h2 className="text-4xl font-semibold tracking-wide mb-2 text-[#3E3E3E]">
+          Trở thành Người bán
+        </h2>
+        <p className="text-gray-500 mb-10 leading-relaxed">
+          Một hành trình tinh tế bắt đầu từ những chi tiết nhỏ
+        </p>
 
-      {/* tiền thương hiệu */}
-      <FormInput
-        label="Tiền thương hiệu"
-        name="tienThuongHieu"
-        value={form.tienThuongHieu}
-        onChange={handleChange}
-        placeholder="Ví dụ: 50000"
-        helper="Chi phí thương hiệu thu trên mỗi sản phẩm"
-        error={errors.tienThuongHieu}
-        icon="₫"
-      />
+        {/* STEPPER */}
+        <div className="flex items-center justify-between mb-12">
+          {steps.map((s, i) => {
+            const Icon = s.icon;
+            const active = step >= i + 1;
 
-      {/* mã số thuế */}
-      <FormInput
-        label="Mã số thuế"
-        name="maSoThue"
-        value={form.maSoThue}
-        onChange={handleChange}
-        placeholder="0123456789"
-        helper="Mã số thuế doanh nghiệp (10 hoặc 13 số)"
-        error={errors.maSoThue}
-        icon="🏢"
-      />
+            return (
+              <div key={i} className="flex-1 flex items-center">
+                <div className="flex flex-col items-center w-full">
+                  <div className={`transition-all duration-300
+                    ${active ? "text-[#C58971] drop-shadow-[0_0_6px_rgba(197,137,113,0.6)]" : "text-gray-300"}
+                  `}>
+                    {step > i + 1 ? <Check /> : <Icon />}
+                  </div>
+                  <span className="text-xs mt-2 tracking-wide">{s.label}</span>
+                </div>
 
-      <h3 className="text-lg font-semibold mt-4">
-        Tài khoản ngân hàng
-      </h3>
+                {i < steps.length - 1 && (
+                  <div className="h-[1px] flex-1 bg-gray-300 mx-2" />
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-      {/* mã ngân hàng */}
-      <FormInput
-        label="Mã ngân hàng"
-        name="maNganHang"
-        value={form.maNganHang}
-        onChange={handleChange}
-        placeholder="VCB"
-        helper="Ví dụ: VCB, TCB, BIDV"
-        error={errors.maNganHang}
-        icon="🏦"
-      />
+        {/* CONTENT ANIMATION */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.35 }}
+            className="grid gap-5"
+          >
 
+            {step === 1 && (
+              <>
+                <FormInput
+                  name="tienNhanCong"
+                  label="Tiền nhân công"
+                  value={form.tienNhanCong}
+                  onChange={handleChange}
+                  error={errors.tienNhanCong}
+                  icon={"₫/hour"}
+                />
 
-      {/* số tài khoản */}
-      <FormInput
-        label="Số tài khoản"
-        name="soTaiKhoan"
-        value={form.soTaiKhoan}
-        onChange={handleChange}
-        placeholder="1234567890"
-        helper="6–20 chữ số"
-        error={errors.soTaiKhoan}
-        icon="💳"
-      />
+                <p className="text-xs italic text-gray-400">
+                  Giá trị của sự tỉ mỉ là vô giá, hãy định giá công sức của bạn thật xứng đáng.
+                </p>
 
-      {/* tên tài khoản */}
-      <FormInput
-        label="Tên tài khoản"
-        name="tenTaiKhoan"
-        value={form.tenTaiKhoan}
-        onChange={handleChange}
-        placeholder="NGUYEN VAN A"
-        helper="Phải trùng với tên trên ngân hàng"
-        error={errors.tenTaiKhoan}
-        icon="👤"
-      />
-      
-      {/* button */}
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-green-600 hover:bg-green-700 text-white py-4 rounded-lg font-semibold"
-      >
-        Tạo tài khoản người bán
-      </button>
+                <FormInput
+                  name="tienThuongHieu"
+                  label="Tiền thương hiệu"
+                  value={form.tienThuongHieu}
+                  onChange={handleChange}
+                  error={errors.tienThuongHieu}
+                  icon={"₫/item"}
+                />
 
+                <FormInput
+                  name="maSoThue"
+                  label="Mã số thuế"
+                  value={form.maSoThue}
+                  onChange={handleChange}
+                  error={errors.maSoThue}
+                  placeholder="10 hoặc 13 chữ số"
+                />
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                <select name="province" onChange={handleChange} className="p-3 rounded-xl bg-white/70 border border-gray-200">
+                  <option>Chọn Tỉnh</option>
+                  {provincesData.map(p => <option key={p.name}>{p.name}</option>)}
+                </select>
+
+                <select name="district" onChange={handleChange} className="p-3 rounded-xl bg-white/70 border">
+                  <option>Chọn Quận</option>
+                  {districts.map(d => <option key={d.name}>{d.name}</option>)}
+                </select>
+
+                <select name="ward" onChange={handleChange} className="p-3 rounded-xl bg-white/70 border">
+                  <option>Chọn Phường</option>
+                  {wards.map(w => <option key={w.name}>{w.name}</option>)}
+                </select>
+
+                <FormInput name="cuThe" label="Địa chỉ cụ thể" value={form.cuThe} onChange={handleChange} error={errors.cuThe}/>
+              </>
+            )}
+
+            {step === 3 && (
+              <>
+                <select
+                  className="p-3 rounded-xl bg-white/70 border"
+                  onChange={(e) => {
+                    const bank = banks.find(b => b.code === e.target.value);
+                    setForm({
+                      ...form,
+                      maNganHang: bank.code,
+                      tenNganHang: bank.name,
+                    });
+                  }}
+                >
+                  <option>Chọn ngân hàng</option>
+                  {banks.map(b => (
+                    <option key={b.code} value={b.code}>
+                      {b.shortName} - {b.name}
+                    </option>
+                  ))}
+                </select>
+
+                <FormInput 
+                  name="soTaiKhoan" 
+                  label="Số tài khoản" 
+                  value={form.soTaiKhoan} 
+                  onChange={handleChange} 
+                  error={errors.soTaiKhoan}
+                  type="number"
+                />
+                <FormInput 
+                  name="tenTaiKhoan" 
+                  label="Tên tài khoản" 
+                  value={form.tenTaiKhoan} 
+                  onChange={handleChange} 
+                  error={errors.tenTaiKhoan}
+                  placeholder="VIẾT HOA KHÔNG DẤU"
+                />
+              </>
+            )}
+
+          </motion.div>
+        </AnimatePresence>
+
+        {/* ACTION */}
+        <div className="flex justify-between mt-10">
+          {step > 1 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="px-6 py-2 rounded-xl bg-gray-200 hover:-translate-y-1 transition"
+            >
+              Quay lại
+            </button>
+          )}
+
+          {step < 3 ? (
+            <button
+              onClick={handleNext}
+              className="px-8 py-3 rounded-xl bg-[#8DA399] text-white hover:bg-[#7c9187] hover:-translate-y-1 transition shadow-md"
+            >
+              Tiếp tục
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              className="px-8 py-3 rounded-xl bg-[#C58971] text-white hover:bg-[#b9775f] hover:-translate-y-1 transition shadow-lg"
+            >
+              {loading ? "Đang xử lý..." : "Hoàn tất"}
+            </button>
+          )}
+        </div>
+
+      </div>
     </div>
   );
-
 }

@@ -1,10 +1,14 @@
 import { useRef, useState, useEffect } from "react";
 
+// Click để dán ảnh (Ctrl + V) <br />
+// Double click để chọn file
 export default function ImageUploader({ multiple = true, limit = 8, onChange, value = [] }) {
   const inputRef = useRef(null);
   const [images, setImages] = useState([]);
+  const containerRef = useRef(null);
 
   const handleClick = () => {
+    containerRef.current?.focus();
     inputRef.current.click();
   };
 
@@ -41,60 +45,91 @@ export default function ImageUploader({ multiple = true, limit = 8, onChange, va
     });
   };
 
-  useEffect(() => {
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  };
 
+  const handlePaste = (e) => {
+
+    const items = e.clipboardData.items;
+    const files = [];
+
+    for (let item of items) {
+      if (item.type.startsWith("image/")) {
+        files.push(item.getAsFile());
+      }
+    }
+
+    if (files.length > 0) {
+      processFiles(files);
+    }
+  };
+
+  const processFiles = (files) => {
+    const newImages = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    setImages((prev) => {
+      const updated = [...prev, ...newImages].slice(0, limit);
+
+      if (onChange) {
+        onChange?.(updated.map((img) => img.file));
+      }
+
+      return updated;
+    });
+  };
+
+  // Trong ImageUploader.jsx
+  useEffect(() => {
     if (!value || value.length === 0) {
       setImages([]);
       return;
     }
 
-    const imgs = value.map((v) => {
+    // Chuyển đổi dữ liệu từ prop 'value' (có thể là String hoặc File) sang state hiển thị
+    const formattedImages = value.map((img) => {
+        if (typeof img === "string") {
+          return { file: null, url: img }; // Nếu là URL từ Backend
+        }
+        if (img instanceof File) {
+          return { file: img, url: URL.createObjectURL(img) }; // Nếu là File mới chọn
+        }
+        return img; // Nếu đã là object {file, url}
+      });
 
-      if (typeof v === "string") {
-        return { file: null, url: v };
-      }
-
-      if (v instanceof File) {
-        return { file: v, url: URL.createObjectURL(v) };
-      }
-
-      return null;
-
-    }).filter(Boolean);
-
-    setImages(imgs);
-
-  }, [value]);
+      setImages(formattedImages);
+    }, [value]);
 
   return (
-    <div className="grid grid-cols-5 gap-4">
+    <div
+      ref={containerRef}
+      onDrop={handleDrop}
+      onDragOver={(e) => e.preventDefault()}
+      onPaste={handlePaste} // Lắng nghe paste tại đây
+      tabIndex={0} // Bắt buộc phải có để div có thể focus
+    >
 
       {/* IMAGE PREVIEW */}
       {images.map((img, i) => (
-        <div
-          key={i}
-          className="relative w-full aspect-square border rounded-lg overflow-hidden"
-        >
+        <div key={i} className="relative w-full aspect-square border rounded-2xl overflow-hidden shadow-sm">
           <img
-            src={img.url}
+            src={img.url} // Sử dụng thuộc tính url đã được chuẩn hóa ở trên
             className="w-full h-full object-cover"
+            alt="san pham"
           />
-
-          {/* REMOVE BUTTON */}
           <button
-            onClick={() => removeImage(i)}
-            className="
-              absolute top-1 right-1
-              w-6 h-6
-              flex items-center justify-center
-              bg-red-500 text-white
-              text-sm font-bold
-              rounded-full
-              hover:bg-red-600
-              transition
-            "
+            onClick={(e) => {
+              e.stopPropagation(); // Tránh kích hoạt sự kiện click của container
+              removeImage(i);
+            }}
+            className="absolute top-2 right-2 w-6 h-6 bg-rose-500/80 text-white rounded-full"
           >
-            −
+            ×
           </button>
         </div>
       ))}
@@ -102,7 +137,12 @@ export default function ImageUploader({ multiple = true, limit = 8, onChange, va
       {/* UPLOAD BOX */}
       {images.length < limit && (
         <div
-          onClick={handleClick}
+          onClick={() => {
+            containerRef.current?.focus(); // 👈 chỉ focus thôi
+          }}
+          onDoubleClick={() => {
+            inputRef.current.click(); // 👈 double click mới mở file
+          }}
           className="
             flex flex-col items-center justify-center
             aspect-square

@@ -44,26 +44,48 @@ export default function OrderList() {
 
   const filteredOrders = activeTab === "all" ? orders : orders.filter(o => o.status === activeTab);
 
+  const tabs = [
+    { key: "all", label: "Tất cả" },
+    { key: "pending_confirm", label: "Chờ xác nhận" },
+    { key: "pending_pickup", label: "Chờ lấy hàng" },
+    { key: "shipping", label: "Chờ giao hàng" },
+    { key: "delivered", label: "Đã giao" },
+    { key: "returned", label: "Trả hàng" },
+    { key: "cancelled", label: "Đã hủy" },
+  ];
+
   return (
     // QUAN TRỌNG: Tuyệt đối KHÔNG bọc thẻ <Layout> ở đây nếu App.jsx đã bọc
     <section className="mx-auto max-w-6xl px-4 py-8 flex gap-8">
       <Sidebar />
-      <div className="flex-1 bg-white rounded-lg shadow-sm border border-gray-100 p-6 font-sans">
-        
-        {/* TABS */}
-        <div className="flex border-b mb-6 text-sm text-gray-500 font-medium overflow-x-auto">
-          {["all", "pending", "shipping", "completed"].map(tab => (
-            <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`pb-4 px-6 border-b-2 capitalize transition-all ${
-                activeTab === tab ? "border-blue-600 text-blue-600" : "border-transparent"
-              }`}
-            >
-              {tab === 'all' ? 'Tất cả' : tab === 'pending' ? 'Chờ thanh toán' : tab === 'shipping' ? 'Vận chuyển' : 'Hoàn thành'}
-            </button>
-          ))}
-        </div>
+      <div className="flex-1 min-w-0 bg-white rounded-lg shadow-sm border border-gray-100 p-6 font-sans">        
+        <>
+          <style>
+            {`
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+            `}
+          </style>
+          {/* TABS */}
+          <div className="w-full overflow-x-auto hide-scrollbar">
+            <div className="flex border-b mb-6 text-sm text-gray-500 font-medium min-w-max">
+              {tabs.map(tab => (
+                <button 
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`pb-4 px-6 border-b-2 transition-all whitespace-nowrap flex-shrink-0 ${
+                    activeTab === tab.key
+                      ? "border-blue-600 text-blue-600"
+                      : "border-transparent"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
 
         {/* LIST */}
         <div className="space-y-8">
