@@ -16,7 +16,7 @@ import VerifyOTP from "./pages-temp/VerifyOTP.jsx";
 import SuperDashboard from "./pages-temp/Admin/Dashboard.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
 import ContentModeration from "./pages-temp/Admin/ContentModeration.jsx";
-import ProductModerationDetail from "./pages-temp/Admin/ProductModerationDetail.jsx";
+import {ProductModerationDetail} from "./pages-temp/Admin/ProductModerationDetail.jsx";
 import Profile from "./pages-temp/Profile.jsx";
 import UserLayout from "./layouts/UserLayout.jsx";
 import Address from "./pages-temp/Address.jsx"

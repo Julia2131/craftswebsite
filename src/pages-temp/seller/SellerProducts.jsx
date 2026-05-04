@@ -23,7 +23,7 @@ const statusMap = {
   2: "DANG_BAN",
   3: "HET_HANG",
   4: "VI_PHAM"
-};
+}; 
 
 export default function SellerProducts() {
     const navigate = useNavigate();

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "../assets/Hero.png";
 import { MessageCircle} from "lucide-react";
 
-export default function AdminHeader() {
+export default function AdminHeader() { 
   const navigate = useNavigate();
   const [anhChanDungUrl, setAnhChanDungUrl] = useState(null);
   const [ten, setTen] = useState("");
@@ -115,14 +115,14 @@ export default function AdminHeader() {
         <div className="mx-auto max-w-6xl px-4 py-1 flex justify-between text-[11px] text-gray-500 font-medium">
           <div className="flex gap-4">
             <span
-              onClick={handleOpenUser}
+              onClick={handleOpenSeller}
               className="cursor-pointer hover:text-blue-600 transition-colors"            
               >Kênh người bán
             </span>
             <span className="text-gray-300">|</span>
             
             <span
-              onClick={handleOpenSeller}
+              onClick={handleOpenUser}
               className="cursor-pointer hover:text-blue-600 transition-colors"            
               >Kênh người mua 
             </span>

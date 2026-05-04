@@ -10,6 +10,7 @@ import video from "../assets/video.mp4";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useRef } from "react";
+import PreviewModal from "../components/search/ProductCard";
 
 /* ===== CHECKBOX (giữ logic, đổi UI) ===== */
 const CheckboxIcon = ({ checked, onChange }) => (
@@ -33,75 +34,6 @@ const IconBtn = ({ children, onClick }) => (
   </button>
 );
 
-/* ===== FAKE DATA giữ nguyên ===== */
-// const initialShops = [
-//   {
-//     id: 1,
-//     name: "MadisonEmiliaDesigns",
-//     checked: true,
-//     products: [
-//       {
-//         id: 101,
-//         name: "Áo thun",
-//         price: 200000,
-//         quantity: 1,
-//         checked: true,
-//         image: "https://via.placeholder.com/150",
-//       },
-//       {
-//         id: 102,
-//         name: "Cốc",
-//         price: 75000,
-//         quantity: 1,
-//         checked: true,
-//         image: "https://via.placeholder.com/150",
-//       },
-//     ],
-//   },
-// ];
-
-const initialShops = [
-  {
-    id: 1,
-    name: "Hường Handmade",
-    checked: true,
-    products: [
-      {
-        id: 101,
-        name: "Vòng tay đá",
-        price: 120000,
-        quantity: 1,
-        checked: true,
-        media: [
-            { type: "image", url: "https://i.pinimg.com/1200x/26/f9/4c/26f94c54dd1a29fc33e32c50efa90581.jpg" },
-            { type: "image", url: "https://i.pinimg.com/1200x/63/43/9a/63439aeac41bf6ea593416a56e488aa7.jpg" },
-            { type: "image", url: "https://i.pinimg.com/736x/a2/65/59/a2655972679f5ff1c9080eec5282ea88.jpg"},
-            { type: "video", url: video }, 
-            { type: "image", url: "https://i.pinimg.com/1200x/26/f9/4c/26f94c54dd1a29fc33e32c50efa90581.jpg" },
-            { type: "image", url: "https://i.pinimg.com/1200x/63/43/9a/63439aeac41bf6ea593416a56e488aa7.jpg" },
-            { type: "image", url: "https://i.pinimg.com/736x/a2/65/59/a2655972679f5ff1c9080eec5282ea88.jpg"},
-            { type: "video", url: video }, 
-            { type: "image", url: "https://i.pinimg.com/1200x/26/f9/4c/26f94c54dd1a29fc33e32c50efa90581.jpg" },
-            { type: "image", url: "https://i.pinimg.com/1200x/63/43/9a/63439aeac41bf6ea593416a56e488aa7.jpg" },
-            { type: "image", url: "https://i.pinimg.com/736x/a2/65/59/a2655972679f5ff1c9080eec5282ea88.jpg"},
-            { type: "video", url: video }, 
-        ],
-      },
-      {
-        id: 102,
-        name: "Túi thêu tay",
-        price: 250000,
-        quantity: 1,
-        checked: true,
-        media: [
-          { type: "image", url: "https://i.pinimg.com/1200x/63/43/9a/63439aeac41bf6ea593416a56e488aa7.jpg" },
-          { type: "video", url: video },
-        ],
-      },
-    ],
-  },
-];
-
 export default function CartPage() {
   const [shops, setShops] = useState([]);
   const [previewIndex, setPreviewIndex] = useState(null);
@@ -112,9 +44,8 @@ export default function CartPage() {
   const token = localStorage.getItem("token");
   const API = import.meta.env.VITE_API_URL;
 
-  /* ================= LOAD CART ================= */
+  /*LOAD CART*/
   useEffect(() => {
-    console.log("useEffect");
     if (!token) {
       alert("Vui lòng đăng nhập trước khi tạo tài khoản người bán");
       navigate("/log");
@@ -131,16 +62,15 @@ export default function CartPage() {
         return res.json();
       })
       .then((data) => {
-        console.log("API DATA:", data); // 🔥 xem ở đây
+        console.log("API DATA:", data);
         setShops(data.shops || []);
       })
       .catch(() => setShops([]));
     console.log("useEffect 2");
   }, [token]);
 
-  /* ================= CHECK ALL ================= */
+  /*CHECK PRODUCT xác định item(sản phẩm, shop, all) nào được chọn để xử lý tiếp (tính tiền, thanh toán, xóa, …)*/ 
   const allChecked = shops.every((s) => s.checked);
-
   const handleAllCheck = () => {
     const newVal = !allChecked;
 
@@ -156,9 +86,9 @@ export default function CartPage() {
     );
   };
 
-  /* ================= CHECK PRODUCT ================= */
+  /* CALL API TO CHECK PRODUCT */
   const handleProductCheck = (shopId, cartItemId) => {
-    console.log("cartItemId: ", cartItemId);
+    // console.log("cartItemId: ", cartItemId);
     setShops((prev) =>
       prev.map((shop) => {
         if (shop.shopId === shopId) {
@@ -184,7 +114,7 @@ export default function CartPage() {
     });
   };
 
-  /* ================= QUANTITY ================= */
+  /* CALL API TO UPDATE QUANTITY*/
   const handleQuantityChange = (shopId, cartItemId, delta) => {
     let newQuantity = 1;
 
@@ -224,7 +154,7 @@ export default function CartPage() {
     };
   }, []);
 
-  /* ================= DELETE ================= */
+  /*DELETE*/
   const handleDelete = (cartItemId) => {
     setShops((prev) =>
       prev
@@ -243,7 +173,7 @@ export default function CartPage() {
     });
   };
 
-  /* ================= TOTAL ================= */
+  /*TOTAL*/
   const total = shops.reduce((sum, shop) => {
     return (
       sum +
@@ -253,6 +183,57 @@ export default function CartPage() {
       }, 0)
     );
   }, 0);
+
+  // TRUYỀN SẢN PHẨM ĐÃ CHỌN QUA TRANG CREATE ORDER 
+  // const handleCheckout = async () => {
+  //   const selectedCartItemIds = shops.flatMap(shop =>
+  //     shop.products
+  //       .filter(p => p.checked)
+  //       .map(p => p.cartItemId)
+  //   );
+
+  //   if (selectedCartItemIds.length === 0) {
+  //     alert("Vui lòng chọn ít nhất một sản phẩm");
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch(`${API}/orders/init`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: "Bearer " + token,
+  //       },
+  //       body: JSON.stringify({ cartItemIds: selectedCartItemIds }),
+  //     });
+
+  //     if (!response.ok) throw new Error("Khởi tạo đơn hàng thất bại");
+
+  //     const createdOrders = await response.json();
+
+  //     navigate("/create-order", { state: { createdOrders } });
+
+  //   } catch (err) {
+  //     alert("Lỗi: " + err.message);
+  //   }
+  // };
+  const handleCheckout = async () => {
+    const cartItemIds = shops.flatMap(s => s.products.filter(p => p.checked).map(p => p.cartItemId));
+    if (cartItemIds.length === 0) return alert("Chọn sản phẩm!");
+    console.log("Selected cartItemIds:", cartItemIds);
+
+    const res = await fetch(`${API}/orders/init`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify({ cartItemIds })
+    });
+    
+    if (res.ok) {
+        const createdOrders = await res.json(); // Đây là List<ShopDTO>
+        console.log("Created Orders:", createdOrders);
+        navigate("/create-order", { state: { createdOrders } });
+    }
+  };
 
 return (
   <div className="flex flex-col gap-6">
@@ -308,33 +289,44 @@ return (
                   <span>{p.name}</span>
                 </div>
 
-                {/* MEDIA */}
-                {p.media && (
+                {/* MEDIA IMAGE VIDEO */}
+                {(p.cover || p.imageUrls?.length || p.videoUrls?.length) && (
                   <div className="flex px-2">
-                    {p.media.slice(0, 4).map((m, i) => (
-                      <div
-                        key={i}
-                        className="relative mr-[-20px] hover:z-50 hover:scale-110 transition"
-                        onClick={() => {
-                          setPreviewMedia(p.media);
-                          setPreviewIndex(i);
-                        }}
-                      >
-                        {m.type === "image" && (
-                          <img
-                            src={m.url}
-                            className="h-[120px] w-[120px] object-cover rounded-lg shadow"
-                          />
-                        )}
-                        {m.type === "video" && (
-                          <video
-                            src={m.url}
-                            className="h-[120px] w-[120px] object-cover rounded-lg shadow"
-                            muted
-                          />
-                        )}
-                      </div>
-                    ))}
+                    {[
+                      ...(p.cover ? [{ type: "image", url: p.cover }] : []),
+                      ...(p.imageUrls || []).map(url => ({ type: "image", url })),
+                      ...(p.videoUrls || []).map(url => ({ type: "video", url })),
+                    ]
+                      .slice(0, 4)
+                      .map((m, i) => (
+                        <div
+                          key={m.url}
+                          className="relative mr-[-20px] hover:z-50 hover:scale-110 transition"
+                          onClick={() => {
+                            setPreviewMedia([
+                              ...(p.cover ? [{ type: "image", url: p.cover }] : []),
+                              ...(p.imageUrls || []).map(url => ({ type: "image", url })),
+                              ...(p.videoUrls || []).map(url => ({ type: "video", url })),
+                            ]);
+                            setPreviewIndex(i);
+                          }}
+                        >
+                          {m.type === "image" && (
+                            <img
+                              src={m.url}
+                              className="h-[120px] w-[120px] object-cover rounded-lg shadow"
+                            />
+                          )}
+
+                          {m.type === "video" && (
+                            <video
+                              src={m.url}
+                              className="h-[120px] w-[120px] object-cover rounded-lg shadow"
+                              muted
+                            />
+                          )}
+                        </div>
+                      ))}
                   </div>
                 )}
               </div>
@@ -387,7 +379,7 @@ return (
 
         <button
           className="bg-[#2563EB] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-          onClick={() => navigate("/create-order")}
+          onClick={handleCheckout}
         >
           Mua hàng
         </button>

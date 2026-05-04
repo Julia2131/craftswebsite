@@ -4,7 +4,7 @@ import { MessageCircle, ShoppingCart, User } from "lucide-react";
 import logo from "../assets/Hero.png";
 import searchIcon from "../assets/Icon.png";
 
-export default function Header() {
+export default function Header() { 
   const navigate = useNavigate();
   
   const [image, setImage] = useState("");

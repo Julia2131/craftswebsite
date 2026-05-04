@@ -5,7 +5,7 @@ import logo from "../assets/Hero.png";
 import searchIcon from "../assets/Icon.png";
 import { MessageCircle, ShoppingCart, User } from "lucide-react";
 
-export default function SellerHeader() {
+export default function SellerHeader() { 
   const navigate = useNavigate();
   const [anhChanDungUrl, setAnhChanDungUrl] = useState(null);
   const [ten, setTen] = useState("");

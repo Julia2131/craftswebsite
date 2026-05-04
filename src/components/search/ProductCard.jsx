@@ -15,10 +15,19 @@ export default function ProductCard({ data }) {
   const API = import.meta.env.VITE_API_URL;
   const token = localStorage.getItem("token");
 
+  const [toast, setToast] = useState("");
+  const showToast = (msg) => {
+    setToast(msg);
+
+    setTimeout(() => {
+      setToast("");
+    }, 3000);
+  };
+
   const handleAddToCart = async () => {
     try {
       const res = await fetch(
-        `${API}/gio-hang/cart/add/${data.id}`,
+        `${API}/gio-hang/cart/add/${data.id}`, 
         {
           method: "POST",
           headers: {
@@ -28,19 +37,25 @@ export default function ProductCard({ data }) {
       );
 
       if (!res.ok) {
-        alert("Thêm vào giỏ thất bại");
+        showToast("Thêm vào giỏ thất bại");
         return;
       }
 
-      alert("🛒 Đã thêm vào giỏ hàng");
+      showToast("🛒 Đã thêm vào giỏ hàng");
     } catch (err) {
       console.error(err);
-      alert("Lỗi server");
+      showToast("Lỗi server");
     }
   };
 
   return (
     <div className="flex flex-col w-full max-w-[900px] mx-auto bg-white border rounded-md shadow-sm">
+      {/* THONG BAO */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          {toast}
+        </div>
+      )}
 
       {/* HEADER */}
       <div className="flex justify-between items-center p-3">

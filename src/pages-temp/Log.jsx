@@ -23,43 +23,65 @@ export default function Log() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: username,
+          username,
           password: pass,
         }),
       });
 
       const data = await res.json();
 
-      if (data.success) {
-
-        const user = {
-          name: username,
-          loginAt: new Date().toISOString(),
-        };
-
-        // lưu token 
-        localStorage.setItem("token", data.token);
-
-        window.dispatchEvent(new Event("craft_user_updated"));
-
-        const roles = data.roles;
-
-        // phân luồng
-        if (roles.includes("SUPER_ADMIN")) {
-          localStorage.setItem("register_admin_id", data.userId);
-          navigate("/admin/home");
-        }
-        else if (roles.includes("SELLER")) {
-          localStorage.setItem("register_seller_id", data.userId);
-          navigate("/seller/home");
-        }
-        else {
-          navigate("/");
-        }
-
-      } else {
-        alert("Sai tên đăng nhập hoặc mật khẩu");
+      if (!data.token) {
+        alert("Sai tài khoản hoặc mật khẩu");
+        return;
       }
+
+      // lưu token
+      // localStorage.setItem("token", data.token);
+
+      // lưu roles
+      const roles = data.roles || [];
+      // localStorage.setItem("roles", JSON.stringify(roles));
+
+      window.dispatchEvent(new Event("craft_user_updated"));
+
+      // =========================
+      // PHÂN LUỒNG GIAO DIỆN
+      // =========================
+
+      if (roles.includes("SUPER_ADMIN")) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.roles[0]);
+        navigate("/admin/home");
+      }
+
+      else if (roles.includes("COMPLIANCE_ADMIN")) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.roles[0]);
+        navigate("/admin/compliance");
+      }
+
+      else if (roles.includes("SUPPORT_ADMIN")) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.roles[0]);
+        navigate("/admin/support");
+      }
+
+      else if (roles.includes("BUYER")) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.roles[0]);
+        navigate("/");
+      }
+
+      // else if (roles.includes("SELLER")) {
+      //   localStorage.setItem("token", data.token);
+      //   localStorage.setItem("role", data.roles[0]);
+      //   navigate("/seller/home");
+      // }
+
+      else {
+        navigate("/");
+      }
+
     } catch (err) {
       console.error(err);
       alert("Không kết nối được server");
