@@ -26,7 +26,7 @@ import SearchPage from "./pages-temp/SearchPage.jsx";
 import CartPage from "./pages-temp/CartPage.jsx";
 import CreateOrder from "./pages-temp/CreateOrder.jsx"; 
 import PaymentPage from "./pages-temp/PaymentPage.jsx";
-
+import SellerOrders from "./pages-temp/seller/SellerOrders.jsx";
 
 export default function App() {
   return (
@@ -54,6 +54,7 @@ export default function App() {
           <Route path="product/all" element={<SellerProducts />} />
           <Route path="product/create" element={<PostCreateReadyMade />} />
           <Route path="product/edit/:id" element={<PostCreateReadyMade />} />
+          <Route path="orders" element={<SellerOrders />} />
         </Route> {/* Role SUPER_ADMIN */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="home" element={<SuperDashboard />} />

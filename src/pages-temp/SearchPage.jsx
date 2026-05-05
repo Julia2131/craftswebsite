@@ -26,7 +26,7 @@ export default function SearchPage() {
   }, [keywordFromURL]);
 
   // CALL API
-  useEffect(() => {
+  useEffect(() => { 
     if (!keywordFromURL) return;
 
     fetch(`${API}/san-pham-co-san/moderation-products-user?search=${encodeURIComponent(keywordFromURL || "")}`)

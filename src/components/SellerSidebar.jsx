@@ -69,6 +69,10 @@ export default function SellerSidebar() {
                       if (item === "Sản phẩm làm sẵn"){
                         navigate("/seller/product/all");
                       }
+
+                      if(item === "Tất cả"){
+                        navigate("/seller/orders");
+                      }
                     }}
                     className={`text-left px-4 py-2 rounded text-sm
                     ${
