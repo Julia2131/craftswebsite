@@ -79,9 +79,9 @@ export default function AdminSidebar() {
                         navigate("/admin/content-moderation");
                       }
 
-                      // if (item === "Sản phẩm làm sẵn"){
-                      //   navigate("/seller/product/all");
-                      // }
+                      if (item === "Cấu hình phân quyền"){
+                        navigate("/admin/permission-matrix");
+                      }
                     }}
                     className={`text-left px-4 py-2 rounded text-sm
                     ${

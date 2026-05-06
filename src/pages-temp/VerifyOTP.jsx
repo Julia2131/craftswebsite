@@ -45,7 +45,7 @@ export default function VerifyOTP() {
       
       const result = await window.confirmationResult.confirm(otp);
 
-      const res = await fetch(`${API}/nguoi-dung/create/sdt`, {
+      const res = await fetch(`${API}/nguoidung/create/sdt`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

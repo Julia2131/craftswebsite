@@ -27,6 +27,7 @@ import CartPage from "./pages-temp/CartPage.jsx";
 import CreateOrder from "./pages-temp/CreateOrder.jsx"; 
 import PaymentPage from "./pages-temp/PaymentPage.jsx";
 import SellerOrders from "./pages-temp/seller/SellerOrders.jsx";
+import PermissionMatrix from "./pages-temp/Admin/PermissionMatrix.jsx";
 
 export default function App() {
   return (
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="home" element={<SuperDashboard />} />
           <Route path="content-moderation" element={<ContentModeration />} />
           <Route path="content-moderation/duyet/:id" element={<ProductModerationDetail />} />
+          <Route path="permission-matrix" element={<PermissionMatrix />} />
         </Route>
       </Routes>
     </BrowserRouter>

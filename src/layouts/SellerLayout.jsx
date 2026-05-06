@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import SellerSidebar from "../components/SellerSidebar";
 import SellerHeader from "../components/SellerHeader";
 
-export default function SellerLayout() {
+export default function SellerLayout() { 
   const location = useLocation();
 
   // 1. Logic ẩn sidebar theo route
