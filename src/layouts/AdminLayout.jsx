@@ -3,7 +3,7 @@ import AdminHeader from "../components/AdminHeader";
 import { Outlet, useLocation } from "react-router-dom";
 
 export default function AdminLayout() {
-
+ 
   const location = useLocation();
 
   const hideNavigation =

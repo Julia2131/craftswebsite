@@ -40,7 +40,7 @@ export default function ResetAccount() {
   );
 
   useEffect(() => {
-    fetch(`${API}/nguoi-dung/ten-dang-nhap`, {
+    fetch(`${API}/nguoidung/tendangnhap`, {
       headers: {
         "Authorization": `Bearer ${token}`
       }
@@ -63,7 +63,7 @@ export default function ResetAccount() {
 
     const userId = localStorage.getItem("token");
 
-    const res = await fetch(`${API}/nguoi-dung/set-password`, {
+    const res = await fetch(`${API}/nguoidung/setpassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

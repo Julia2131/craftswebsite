@@ -25,7 +25,7 @@ export default function Header() {
         return;
       }
       // Lay anh 
-      const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
+      const res = await fetch(`${API}/nguoidung/me/anh-chan-dung`, {
         headers: {
           "Authorization": "Bearer " + token
         }
@@ -41,7 +41,7 @@ export default function Header() {
       localStorage.setItem("anhChanDungUrl", data.anhChanDungUrl);
 
       // Lay ten 
-      const res1 = await fetch(`${API}/nguoi-dung/me/ten`, {
+      const res1 = await fetch(`${API}/nguoidung/me/ten`, {
         headers: {
           "Authorization": "Bearer " + token
         }

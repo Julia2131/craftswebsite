@@ -17,7 +17,7 @@ export default function Log() {
     if (!canSubmit) return;
 
     try {
-      const res = await fetch(`${API}/nguoi-dung/login`, {
+      const res = await fetch(`${API}/nguoidung/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

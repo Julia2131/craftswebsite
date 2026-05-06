@@ -18,7 +18,7 @@ export default function SellerHeader() {
     const fetchUserInfo  = async () => {
         try {
             // Lấy ảnh chân dung từ backend
-            const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
+            const res = await fetch(`${API}/nguoidung/me/anh-chan-dung`, {
               headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
               }
@@ -30,7 +30,7 @@ export default function SellerHeader() {
                 console.error("Lỗi khi lấy ảnh chân dung:", data.message);
             }
             // Lấy tên người dùng từ backend
-            const resTen = await fetch(`${API}/nguoi-dung/me/ten`, {
+            const resTen = await fetch(`${API}/nguoidung/me/ten`, {
               headers: {
                 "Authorization": `Bearer ${localStorage.getItem("token")}`
               }

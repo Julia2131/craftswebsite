@@ -19,7 +19,7 @@ export default function AdminHeader() {
 
         if (!adminId) return;
 
-        const res = await fetch(`${API}/nguoi-dung/me/anh-chan-dung`, {
+        const res = await fetch(`${API}/nguoidung/me/anh-chan-dung`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
@@ -31,7 +31,7 @@ export default function AdminHeader() {
           setAnhChanDungUrl(data.anhChanDungUrl);
         }
 
-        const resTen = await fetch(`${API}/nguoi-dung/me/ten`, {
+        const resTen = await fetch(`${API}/nguoidung/me/ten`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
