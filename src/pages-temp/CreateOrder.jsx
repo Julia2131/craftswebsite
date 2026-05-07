@@ -191,7 +191,7 @@ export default function CreateOrder() {
                     <span className="text-gray-400 border-l pl-3">{item.phone}</span>
                   </div>
                   <p className="text-sm text-gray-500">
-                    {item.city}, {item.district}, {item.commune}, {item.street}
+                    {item.city}, {item.district}, {item.commune}, {item.street}, {"Số 1, Ngõ 10, Phố Chùa Láng, Phường Láng Thượng, Quận Đống Đa, Hà Nội"}
                   </p>
                   {/* Mặc định */}
                   <span className="inline-block mt-1 text-[10px] text-red-500 border border-red-500 px-1.5 py-0.5 rounded-sm font-bold">
@@ -201,13 +201,32 @@ export default function CreateOrder() {
                 <div className="flex flex-col items-end gap-2 text-sm text-blue-600">
                   <button className="hover:underline">Cập nhật</button>
                   {/* Nếu không phải mặc định thì hiển thị xóa */}
-                  {/* <button className="hover:underline text-gray-400">Xóa</button> */}
+                  <button className="hover:underline text-gray-400">Xóa</button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p>Đang tải địa chỉ...</p>
+              <div className="flex justify-between border-b pb-4 last:border-0">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-gray-800 uppercase">{"Trần Thị Hường"}</span>
+                    <span className="text-gray-400 border-l pl-3">{"0988753730"}</span>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    {"Thôn 1, Hạ Lôi, Mê Linh, Hà Nội"}
+                  </p>
+                  {/* Mặc định */}
+                  <span className="inline-block mt-1 text-[10px] text-red-500 border border-red-500 px-1.5 py-0.5 rounded-sm font-bold">
+                    MẶC ĐỊNH
+                  </span>
+                </div>
+                <div className="flex flex-col items-end gap-2 text-sm text-blue-600">
+                  <button className="hover:underline">Cập nhật</button>
+                  {/* Nếu không phải mặc định thì hiển thị xóa */}
+                  <button className="hover:underline text-gray-400">Xóa</button>
+                </div>
+              </div>
         )}
       </div>
 

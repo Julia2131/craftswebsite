@@ -17,6 +17,7 @@ const PAYMENT_TABS = [
   { label: "Xác nhận thanh toán", value: "XAC_NHAN_THANH_TOAN" },
   { label: "Đóng gói", value: "XAC_NHAN_LAY_HANG" },
   { label: "Giao hàng", value: "XAC_NHAN_GIAO_HANG" },
+  { label: "Đang giao", value: "DANG_GIAO" },
   { label: "Hoàn thành", value: "HOAN_THANH" },
   { label: "Đã hủy", value: "DA_HUY" },
 ];
@@ -97,7 +98,7 @@ export default function SellerOrders() {
             });
 
             const data = await res.json();
-            // console.log("API response:", data);
+            console.log("API response approve:", data);
 
             if (!res.ok) {
                 console.log("API error response:", data);
@@ -216,6 +217,7 @@ export default function SellerOrders() {
         case "CHO_LAY_HANG":
             return "bg-yellow-100 text-yellow-700";
         case "DANG_GIAO":
+            return "bg-orange-100 text-yellow-700";
         case "CHO_GIAO_HANG":
             return "bg-[#E6F0EB] text-[#8DA399]";
         case "DA_GIAO":
@@ -406,7 +408,9 @@ export default function SellerOrders() {
                                 {/* XAC_NHAN_THANH_TOAN */}
                                 {processingType === "XAC_NHAN_THANH_TOAN" && (
                                     <button
-                                        onClick={() => setBillModal(o.billImages)}
+                                        onClick={() => 
+                                            setBillModal(o.billImages)
+                                        }
                                         className="bg-[#8DA399] text-white px-3 py-1 rounded-lg text-xs whitespace-nowrap"
                                     >
                                     Kiểm tra Bill
@@ -611,28 +615,30 @@ export default function SellerOrders() {
 
             {/* BILL MODAL */}
             <AnimatePresence>
-            {billModal && (
-                <motion.div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
-                <motion.div className="bg-white p-6 rounded-3xl w-[400px]">
+            {orders.map((o) =>
+                billModal ? (
+                <motion.div
+                    key={o.orderId}
+                    className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+                >
+                    <motion.div className="bg-white p-6 rounded-3xl w-[400px]">
                     <h3 className="mb-3 font-semibold">Kiểm tra thanh toán</h3>
 
-                    <img
-                    src={billModal.anhMinhChungId}
-                    className="w-full rounded-xl mb-3"
-                    />
+                    <img src={billModal} className="w-full rounded-xl mb-3" />
 
                     <div className="flex justify-end gap-2">
-                    <button onClick={() => setBillModal(null)}>Đóng</button>
+                        <button onClick={() => setBillModal(null)}>Đóng</button>
 
-                    <button
-                        onClick={() => confirmPayment(billModal.orderId)}
+                        <button
+                        onClick={() => confirmPayment(o.orderId)}
                         className="bg-teal-600 text-white px-4 py-2 rounded-xl"
-                    >
+                        >
                         Xác nhận đã nhận tiền
-                    </button>
+                        </button>
                     </div>
+                    </motion.div>
                 </motion.div>
-                </motion.div>
+                ) : null
             )}
             </AnimatePresence>
 

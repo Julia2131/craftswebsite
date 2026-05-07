@@ -122,7 +122,7 @@ export default function Header() {
               >Kênh người bán
             </span>
             <span className="text-gray-300">|</span>
-            <span className="cursor-pointer hover:text-blue-600 transition-colors">Trở thành Người bán Crafts</span>
+            {/* <span className="cursor-pointer hover:text-blue-600 transition-colors">Trở thành Người bán Crafts</span> */}
           </div>
           <div className="flex gap-4">
             <span className="cursor-pointer hover:text-blue-600 transition-colors">Hỗ trợ</span>

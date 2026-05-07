@@ -117,6 +117,26 @@ export default function ContentModeration() {
         navigate(`/admin/content-moderation/duyet/${id}`);
     };
 
+    // QUICK APPROVE: tối thiểu để không crash khi click.
+    // Gọi endpoint approve hiện có (nếu backend đã bật), nếu fail thì chỉ log và giữ UI ổn định.
+    const handleQuickApprove = async (id) => {
+        try {
+            await fetch(`${API}/nhat-ky-kiem-toan/approve/${id}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`
+                },
+                body: JSON.stringify("Duyệt nhanh")
+            });
+        } catch (e) {
+            console.error("Quick approve failed", e);
+        } finally {
+            // refresh list để phản ánh thay đổi (nếu có)
+            try { await fetchProducts(); } catch {}
+        }
+    };
+
   return (
     <div className="p-6">
 

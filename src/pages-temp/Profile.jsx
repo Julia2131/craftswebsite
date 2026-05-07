@@ -76,6 +76,7 @@ export default function Profile() {
     navigate("/"); // hoặc "/log"
   };
 
+  
   return (
     // XÓA THẺ <Layout> Ở ĐÂY - CHỈ GIỮ LẠI <section>
     <section className="mx-auto max-w-6xl px-4 py-8">
@@ -84,7 +85,7 @@ export default function Profile() {
         {/* SIDEBAR */}
         <Sidebar />
 
-        {/* MAIN CONTENT */}
+        {/* MAIN CONTENT */} 
         <div className="flex-1 bg-white p-8 rounded-lg shadow-sm border border-gray-100">
           <div className="border-b pb-4 mb-8">
             <h1 className="text-xl font-bold text-gray-800">Hồ sơ của tôi</h1>

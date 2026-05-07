@@ -225,8 +225,8 @@ export default function PaymentPage() {
                 illustration="✅"
                 title="Đơn hàng đã tạo thành công!"
                 description="Seller đã nhận đơn hàng của bạn. Hãy chờ xác nhận từ seller."
-                primaryActionText="Quay về danh sách đơn hàng"
-                onPrimaryAction={() => navigate("/orders")}
+                primaryActionText="Về trang chủ"
+                onPrimaryAction={() => navigate("/")}
             />
         )}
     </>

@@ -92,7 +92,7 @@ export default function AdminHeader() {
 
       console.log("sellerId:", sellerId);
 
-      localStorage.setItem("register_seller_id", sellerId);
+      // localStorage.setItem("register_seller_id", sellerId);
 
       navigate("/seller/home");
 

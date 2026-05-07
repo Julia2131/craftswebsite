@@ -95,6 +95,11 @@ export default function SellerProducts() {
         navigate(`/seller/product/edit/${id}`);
     };
 
+    const handleDetail = (id) => {
+        // Hiện tại chưa có page "detail" riêng, dùng edit page để tránh crash khi click icon chi tiết.
+        navigate(`/seller/product/edit/${id}`);
+    };
+
     const handleDelete = async (id) => {
 
     const confirmDelete = window.confirm("Bạn có chắc muốn xóa sản phẩm?");
